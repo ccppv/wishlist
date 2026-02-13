@@ -1,0 +1,9 @@
+# Backend ignore
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/.gitkeep
