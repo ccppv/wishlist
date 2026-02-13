@@ -17,12 +17,22 @@ node_modules/
 out/
 .vercel
 
-# Environment
+# Environment — никогда не коммитить
 .env
 .env.local
 .env.prod
+.env.development
+.env.test
 .env.*.local
 backend/.env
+frontend/.env
+frontend/.env.local
+
+# SSL / сертификаты
+*.pem
+*.key
+*.crt
+ssl/
 
 # IDEs
 .vscode/
@@ -47,8 +57,9 @@ logs/
 # Docker
 *.pid
 
-# Uploads
+# Загрузки пользователей
 uploads/
+backend/uploads/
 
 # Cursor
 .cursor/
@@ -56,7 +67,8 @@ uploads/
 # Backup
 *.bak
 *.bak2
+*~
 
-# Temp scripts
+# Временные скрипты
 _rewrite_*.py
 test_*.py
