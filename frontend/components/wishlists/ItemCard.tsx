@@ -40,7 +40,7 @@ function CardCarousel({ images, alt }: { images: string[]; alt: string }) {
 
 /* ── Contributors display helper ─────────────────────────────── */
 function ContributorsDisplay({ item, variant }: { item: Item; variant: 'partial' | 'full' }) {
-  const colorClass = variant === 'partial' ? 'text-yellow-700' : 'text-gray-500'
+  const colorClass = variant === 'partial' ? 'text-yellow-700 dark:text-yellow-400' : 'text-gray-500 dark:text-neutral-400'
   if (item.contributors && item.contributors.length > 0) {
     return (
       <div className={`text-xs ${colorClass} mt-1`}>
@@ -182,15 +182,15 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
       <div className="relative">
         <div
           onClick={handleClick}
-          className={`rounded-xl border-2 overflow-hidden transition-all bg-white hover:shadow-lg ${
+          className={`rounded-xl border-2 overflow-hidden transition-all bg-white dark:bg-neutral-800 hover:shadow-lg ${
             selectMode ? 'cursor-pointer' : ''
-          } ${isSelected ? 'border-primary-600 ring-2 ring-primary-200' : 'border-gray-200'}`}
+          } ${isSelected ? 'border-primary-600 ring-2 ring-primary-200' : 'border-gray-200 dark:border-neutral-700'}`}
         >
           {selectMode && (
             <div className="absolute top-3 left-3 z-10">
               <div
                 className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition ${
-                  isSelected ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'
+                  isSelected ? 'bg-primary-600 border-primary-600' : 'bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-600'
                 }`}
               >
                 {isSelected && (
@@ -205,13 +205,13 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
               </div>
             </div>
           )}
-          <div className="relative aspect-square bg-gray-100">
+          <div className="relative aspect-square bg-gray-100 dark:bg-neutral-700">
             {hasMultipleImages ? (
               <CardCarousel images={item.images!} alt={item.title} />
             ) : imgSrc ? (
               <img src={imgSrc || ''} alt={item.title} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-300">
+              <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-neutral-600">
                 <svg
                   className="w-16 h-16"
                   fill="none"
@@ -236,7 +236,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
           <div className="p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 min-h-[2.5rem]">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 min-h-[2.5rem]">
                   {item.url ? (
                     <a
                       href={item.url}
@@ -286,7 +286,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                 setShowMenu(prev => !prev)
                 setShowAddToMenu(false)
               }}
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition bg-white/80 shadow-sm"
+              className="p-1.5 text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition bg-white/80 dark:bg-neutral-800/80 shadow-sm"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
@@ -294,16 +294,16 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 top-full mt-2 rounded-2xl bg-white/90 backdrop-blur-lg text-neutral-800 shadow-xl border border-white/50 z-30 w-60 py-1.5">
+              <div className="absolute right-0 top-full mt-2 rounded-2xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg text-neutral-800 dark:text-neutral-200 shadow-xl border border-white/50 dark:border-neutral-700 z-30 w-60 py-1.5">
                 <button
                   onClick={e => {
                     e.stopPropagation()
                     setIsEditing(true)
                     setShowMenu(false)
                   }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-black/5 text-left"
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 text-left"
                 >
-                  <svg className="w-[18px] h-[18px] text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-[18px] h-[18px] text-neutral-500 dark:text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                   </svg>
                   <span>Редактировать</span>
@@ -314,7 +314,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                     await loadWishlists()
                     setShowAddToMenu(prev => !prev)
                   }}
-                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-black/5"
+                  className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   <span className="flex items-center gap-2.5">
                     <svg className="w-[18px] h-[18px] text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -324,22 +324,22 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                     </svg>
                     <span>Добавить в</span>
                   </span>
-                  <svg className="w-4 h-4 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="w-4 h-4 text-neutral-400 dark:text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </button>
                 {showAddToMenu && (
-                  <div className="absolute top-1 left-full ml-2 w-64 rounded-2xl bg-white/90 backdrop-blur-lg text-neutral-800 shadow-xl border border-white/50 py-1.5">
-                    <div className="px-4 pb-1 text-[11px] uppercase tracking-wide text-neutral-500">
+                  <div className="absolute top-1 left-full ml-2 w-64 rounded-2xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg text-neutral-800 dark:text-neutral-200 shadow-xl border border-white/50 dark:border-neutral-700 py-1.5">
+                    <div className="px-4 pb-1 text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
                       Добавить в списки желаний
                     </div>
                     {isWishlistsLoading && (
-                      <div className="px-4 py-2 text-sm text-neutral-600">Загрузка...</div>
+                      <div className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400">Загрузка...</div>
                     )}
                     {!isWishlistsLoading &&
                       wishlists &&
                       wishlists.filter(w => !w.is_archived && w.id !== item.wishlist_id).length === 0 && (
-                        <div className="px-4 py-2 text-sm text-neutral-500">Нет других списков</div>
+                        <div className="px-4 py-2 text-sm text-neutral-500 dark:text-neutral-400">Нет других списков</div>
                       )}
                     {!isWishlistsLoading &&
                       wishlists &&
@@ -354,7 +354,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                                 e.stopPropagation()
                                 handleToggleTarget(w.id)
                               }}
-                              className="w-full px-4 py-1.5 text-sm flex items-center gap-2 hover:bg-black/5"
+                              className="w-full px-4 py-1.5 text-sm flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5"
                             >
                               <span
                                 className={`flex items-center justify-center w-4 h-4 rounded-md border ${
@@ -382,7 +382,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                             </button>
                           )
                         })}
-                    <div className="h-px bg-neutral-200/80 my-1" />
+                    <div className="h-px bg-neutral-200/80 dark:bg-neutral-600/80 my-1" />
                     <div className="flex items-center justify-end gap-2 px-4 pb-1 pt-1">
                       <button
                         onClick={e => {
@@ -390,7 +390,7 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                           setShowAddToMenu(false)
                           setSelectedTargets(new Set())
                         }}
-                        className="px-3 py-1.5 text-xs text-neutral-600 hover:bg-black/5 rounded-lg"
+                        className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg"
                       >
                         Отмена
                       </button>
@@ -406,13 +406,13 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
                     </div>
                   </div>
                 )}
-                <div className="h-px bg-neutral-200/80 my-1" />
+                <div className="h-px bg-neutral-200/80 dark:bg-neutral-600/80 my-1" />
                 <button
                   onClick={e => {
                     e.stopPropagation()
                     handleDelete()
                   }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-500/10"
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-500/10 dark:hover:bg-red-500/20"
                 >
                   <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="3 6 5 6 21 6" />
@@ -434,59 +434,59 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
             onClick={() => setIsEditing(false)}
           >
             <div
-              className="bg-white rounded-2xl max-w-md w-full p-6"
+              className="bg-white dark:bg-neutral-800 rounded-2xl max-w-md w-full p-6"
               onClick={e => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Редактировать подарок</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Редактировать подарок</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Название</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Название</label>
                   <input
                     type="text"
                     value={editTitle}
                     onChange={e => setEditTitle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white bg-transparent dark:bg-neutral-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Цена (₽)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Цена (₽)</label>
                   <input
                     type="number"
                     value={editPrice}
                     onChange={e => setEditPrice(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white bg-transparent dark:bg-neutral-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Описание</label>
                   <textarea
                     value={editDescription}
                     onChange={e => setEditDescription(e.target.value)}
                     rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white bg-transparent dark:bg-neutral-700 resize-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ссылка</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Ссылка</label>
                   <input
                     type="url"
                     value={editUrl}
                     onChange={e => setEditUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white bg-transparent dark:bg-neutral-700"
                   />
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
+                  className="flex-1 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg text-gray-700 dark:text-neutral-300 font-medium hover:bg-gray-50 dark:hover:bg-neutral-700"
                 >
                   Отмена
                 </button>
                 <button
                   onClick={handleSaveEdit}
                   disabled={isSaving || !editTitle.trim()}
-                  className="flex-1 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:bg-gray-300"
+                  className="flex-1 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:bg-gray-300 dark:disabled:bg-neutral-600"
                 >
                   {isSaving ? '...' : 'Сохранить'}
                 </button>
@@ -501,27 +501,27 @@ export default function ItemCard({ item, isOwner, onUpdate, selectMode, isSelect
   // ── Guest View ──
   return (
     <div>
-      <div onClick={handleClick} className={`rounded-xl border-2 overflow-hidden transition-all ${isFullyReserved ? 'bg-gray-100 border-gray-300 opacity-70 cursor-default' : hasPartialReservation ? 'bg-yellow-50 border-yellow-300 hover:shadow-lg cursor-pointer' : 'bg-white border-gray-200 hover:shadow-lg cursor-pointer'}`}>
-        <div className="relative aspect-square bg-gray-100">
+      <div onClick={handleClick} className={`rounded-xl border-2 overflow-hidden transition-all ${isFullyReserved ? 'bg-gray-100 dark:bg-neutral-800 border-gray-300 dark:border-neutral-600 opacity-70 cursor-default' : hasPartialReservation ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-700 hover:shadow-lg cursor-pointer' : 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 hover:shadow-lg cursor-pointer'}`}>
+        <div className="relative aspect-square bg-gray-100 dark:bg-neutral-700">
           {hasMultipleImages ? <CardCarousel images={item.images!} alt={item.title} /> : imgSrc ? <img src={imgSrc || ''} alt={item.title} className="w-full h-full object-cover" /> : (
-            <div className="w-full h-full flex items-center justify-center text-gray-300"><svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
+            <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-neutral-600"><svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
           )}
           {item.priority === 'high' && <span className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">🔥 Важно</span>}
           {isFullyReserved && (
             <div className="absolute inset-0 bg-gray-900 bg-opacity-40 flex items-center justify-center">
-              <div className="bg-white px-4 py-2 rounded-full font-bold text-gray-700 text-sm">✓ Зарезервировано</div>
+              <div className="bg-white dark:bg-neutral-800 px-4 py-2 rounded-full font-bold text-gray-700 dark:text-neutral-300 text-sm">✓ Зарезервировано</div>
             </div>
           )}
         </div>
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2 min-h-[2.5rem]">
             {item.url ? <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="hover:text-primary-600 transition inline-flex items-center gap-1">{item.title}<svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a> : item.title}
           </h3>
           {item.price && <div className="text-lg font-bold text-primary-600 mb-2">{Number(item.price).toLocaleString('ru-RU', {minimumFractionDigits:0, maximumFractionDigits:1})} {item.currency || '₽'}</div>}
           {hasPartialReservation && (
             <div className="mb-3">
-              <div className="flex justify-between text-xs text-gray-600 mb-1"><span>Собрано</span><span>{Number(item.collected_amount).toLocaleString()} / {Number(item.price).toLocaleString()} {item.currency || '₽'}</span></div>
-              <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-yellow-500 h-2 rounded-full transition-all" style={{width: `${reservationProgress}%`}} /></div>
+              <div className="flex justify-between text-xs text-gray-600 dark:text-neutral-400 mb-1"><span>Собрано</span><span>{Number(item.collected_amount).toLocaleString()} / {Number(item.price).toLocaleString()} {item.currency || '₽'}</span></div>
+              <div className="w-full bg-gray-200 dark:bg-neutral-700 rounded-full h-2"><div className="bg-yellow-500 h-2 rounded-full transition-all" style={{width: `${reservationProgress}%`}} /></div>
               <ContributorsDisplay item={item} variant="partial" />
             </div>
           )}

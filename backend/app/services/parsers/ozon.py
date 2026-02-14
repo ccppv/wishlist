@@ -71,6 +71,7 @@ async def _parse_playwright(url: str) -> dict:
             pass
 
         await page.goto(url, wait_until="domcontentloaded", timeout=45000)
+        await page.wait_for_timeout(7000)
 
         for attempt in range(3):
             content = await page.content()
@@ -84,7 +85,7 @@ async def _parse_playwright(url: str) -> dict:
             await page.wait_for_selector("h1", timeout=15000)
         except PwTimeout:
             pass
-        await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(2000)
 
         data = await page.evaluate("""() => {
             const result = {title: null, price: null, description: null, images: []};

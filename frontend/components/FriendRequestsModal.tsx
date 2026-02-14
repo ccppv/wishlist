@@ -80,14 +80,14 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Заявки в друзья</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Заявки в друзья</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
+              className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300 transition"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -103,7 +103,7 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
           ) : requests.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">👥</div>
-              <p className="text-gray-500">Нет новых заявок в друзья</p>
+              <p className="text-gray-500 dark:text-neutral-400">Нет новых заявок в друзья</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -113,10 +113,10 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
                 return (
                   <div
                     key={request.id}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition"
+                    className="p-4 border border-gray-200 dark:border-neutral-700 rounded-lg hover:border-gray-300 dark:hover:border-neutral-600 transition"
                   >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {request.friend.avatar_url ? (
                           <img
                             src={getAvatarUrl(request.friend.avatar_url) || ''}
@@ -124,17 +124,17 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-gray-600 font-medium text-lg">
+                          <span className="text-gray-600 dark:text-neutral-400 font-medium text-lg">
                             {request.friend.username[0].toUpperCase()}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">
+                        <p className="font-medium text-gray-900 dark:text-white truncate">
                           {request.friend.full_name || request.friend.username}
                         </p>
-                        <p className="text-sm text-gray-500 truncate">@{request.friend.username}</p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-sm text-gray-500 dark:text-neutral-400 truncate">@{request.friend.username}</p>
+                        <p className="text-xs text-gray-400 dark:text-neutral-500 mt-1">
                           {new Date(request.requested_at).toLocaleDateString('ru-RU', {
                             day: 'numeric',
                             month: 'long',
@@ -163,7 +163,7 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
                       <button
                         onClick={() => handleReject(request.id)}
                         disabled={isProcessing}
-                        className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-400 text-gray-700 font-medium rounded-lg transition"
+                        className="flex-1 px-4 py-2 bg-gray-200 dark:bg-neutral-700 hover:bg-gray-300 dark:hover:bg-neutral-600 disabled:bg-gray-400 text-gray-700 dark:text-neutral-300 font-medium rounded-lg transition"
                       >
                         ✕ Отклонить
                       </button>
@@ -177,7 +177,7 @@ export default function FriendRequestsModal({ isOpen, onClose }: FriendRequestsM
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full mt-6 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition"
+            className="w-full mt-6 px-6 py-3 bg-gray-200 dark:bg-neutral-700 hover:bg-gray-300 dark:hover:bg-neutral-600 text-gray-700 dark:text-neutral-300 font-semibold rounded-lg transition"
           >
             Закрыть
           </button>

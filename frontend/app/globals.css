@@ -2,24 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 30, 30, 30;
-  --bg-cloud: #eef0f4;
-}
+@layer base {
+  :root {
+    --foreground-rgb: 30, 30, 30;
+    --bg-cloud: #eef0f4;
+    --card-bg: rgba(255, 255, 255, 0.6);
+    --card-border: rgba(229, 229, 229, 0.4);
+    --surface: #ffffff;
+    --surface-secondary: #f9fafb;
+    --modal-bg: #ffffff;
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --divider: #e5e7eb;
+  }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background-color: var(--bg-cloud);
-  background-image:
-    radial-gradient(ellipse at 25% 40%, rgba(255,255,255,0.55) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 25%, rgba(255,255,255,0.4) 0%, transparent 45%),
-    radial-gradient(ellipse at 50% 75%, rgba(235,238,245,0.5) 0%, transparent 50%);
-  min-height: 100vh;
-}
+  .dark {
+    --foreground-rgb: 230, 230, 230;
+    --bg-cloud: #0a0a0a;
+    --card-bg: rgba(38, 38, 38, 0.7);
+    --card-border: rgba(64, 64, 64, 0.5);
+    --surface: #171717;
+    --surface-secondary: #1a1a1a;
+    --modal-bg: #1c1c1e;
+    --input-bg: #262626;
+    --input-border: #404040;
+    --divider: #2e2e2e;
+  }
 
-/* Ensure inputs always have dark text */
-input, textarea, select {
-  color: #111827 !important;
+  body {
+    color: rgb(var(--foreground-rgb));
+    background-color: var(--bg-cloud);
+    background-image:
+      radial-gradient(ellipse at 25% 40%, rgba(255,255,255,0.55) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 25%, rgba(255,255,255,0.4) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 75%, rgba(235,238,245,0.5) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(ellipse at 25% 40%, rgba(30,30,30,0.6) 0%, transparent 55%),
+      radial-gradient(ellipse at 75% 25%, rgba(20,20,20,0.5) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 75%, rgba(25,25,25,0.5) 0%, transparent 50%);
+  }
 }
 
 @layer utilities {
@@ -30,5 +55,32 @@ input, textarea, select {
     background: rgba(252, 253, 255, 0.68);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+  }
+  .dark .bg-header {
+    background: rgba(23, 23, 23, 0.78);
+  }
+  .bg-card {
+    background: var(--card-bg);
+  }
+  .bg-surface {
+    background: var(--surface);
+  }
+  .bg-surface-secondary {
+    background: var(--surface-secondary);
+  }
+  .bg-modal {
+    background: var(--modal-bg);
+  }
+  .bg-input {
+    background: var(--input-bg);
+  }
+  .border-card {
+    border-color: var(--card-border);
+  }
+  .border-input {
+    border-color: var(--input-border);
+  }
+  .border-divider {
+    border-color: var(--divider);
   }
 }

@@ -182,25 +182,25 @@ export default function PublicWishlistPage() {
 
   if (invalidToken || wrongRoute) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-[3px] border-neutral-300 border-t-neutral-800 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-900">
+        <div className="w-10 h-10 border-[3px] border-neutral-300 dark:border-neutral-600 border-t-neutral-800 dark:border-t-neutral-200 rounded-full animate-spin" />
       </div>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-[3px] border-neutral-300 border-t-neutral-800 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-neutral-900">
+        <div className="w-10 h-10 border-[3px] border-neutral-300 dark:border-neutral-600 border-t-neutral-800 dark:border-t-neutral-200 rounded-full animate-spin" />
       </div>
     )
   }
 
   if (error || !wishlist) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-neutral-900">
         <header className="sticky top-0 z-30 px-3 pt-3">
-          <div className="bg-header border border-gray-200/40 rounded-2xl shadow-sm">
+          <div className="bg-header border border-gray-200/40 dark:border-neutral-700/50 rounded-2xl shadow-sm">
             <div className="max-w-5xl mx-auto px-4 py-3">
               <Link href={isAuthenticated ? '/profile' : '/'} className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -212,11 +212,11 @@ export default function PublicWishlistPage() {
           </div>
         </header>
         <main className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-          <svg className="w-14 h-14 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
+          <svg className="w-14 h-14 text-neutral-300 dark:text-neutral-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-lg font-medium text-neutral-700 mb-1">Вишлист не найден</p>
-          <p className="text-sm text-neutral-500">{error}</p>
+          <p className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-1">Вишлист не найден</p>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">{error}</p>
         </main>
       </div>
     )
@@ -235,10 +235,10 @@ export default function PublicWishlistPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-neutral-900">
       {/* Header */}
       <header className="sticky top-0 z-30 px-3 pt-3">
-        <div className="bg-header border border-gray-200/40 rounded-2xl shadow-sm">
+        <div className="bg-header border border-gray-200/40 dark:border-neutral-700/50 rounded-2xl shadow-sm">
           <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
             {isAuthenticated ? (
               <Link href="/profile" className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition">
@@ -248,14 +248,14 @@ export default function PublicWishlistPage() {
                 <span className="text-sm font-medium">Назад</span>
               </Link>
             ) : (
-              <Link href="/" className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition">
+              <Link href="/" className="inline-flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
                 <span className="text-sm font-medium">На главную</span>
               </Link>
             )}
-            <Link href="/" className="text-lg font-bold tracking-tight text-neutral-900 hover:opacity-80 transition">Wishlist</Link>
+            <Link href="/" className="text-lg font-bold tracking-tight text-neutral-900 dark:text-white hover:opacity-80 transition">Wishlist</Link>
             <div className="w-16" />
           </div>
         </div>
@@ -264,20 +264,20 @@ export default function PublicWishlistPage() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
         {/* Wishlist header — cover only as avatar */}
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-neutral-50/80 border border-neutral-200/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-neutral-50/80 dark:bg-neutral-800 border border-neutral-200/40 dark:border-neutral-700 flex items-center justify-center overflow-hidden flex-shrink-0">
             {wishlist.cover_emoji ? (
               <span className="text-3xl sm:text-4xl">{wishlist.cover_emoji}</span>
             ) : wishlist.cover_image_url ? (
               <img src={getAvatarUrl(wishlist.cover_image_url) || ''} alt="" className="w-full h-full object-cover" />
             ) : (
-              <svg className="w-8 h-8 text-neutral-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.3}>
+              <svg className="w-8 h-8 text-neutral-200 dark:text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">{wishlist.title}</h1>
-            {wishlist.description && <p className="mt-1 text-sm text-neutral-500">{wishlist.description}</p>}
+            <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">{wishlist.title}</h1>
+            {wishlist.description && <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{wishlist.description}</p>}
           </div>
         </div>
 
@@ -285,7 +285,7 @@ export default function PublicWishlistPage() {
         {(wishlist.items || []).length > 0 && (
           <div className="flex flex-col sm:flex-row gap-2 mb-6">
             <div className="relative flex-1">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -293,13 +293,13 @@ export default function PublicWishlistPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Поиск..."
-                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-xl bg-white/80 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-300 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2.5 border border-neutral-200 dark:border-neutral-600 rounded-xl bg-white/80 dark:bg-neutral-700 dark:border-neutral-600 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500 focus:border-transparent"
               />
             </div>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="px-4 py-2.5 border border-neutral-200 rounded-xl bg-white/80 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-neutral-300"
+              className="px-4 py-2.5 border border-neutral-200 dark:border-neutral-600 rounded-xl bg-white/80 dark:bg-neutral-700 dark:border-neutral-600 text-sm text-neutral-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500"
             >
               <option value="default">По умолчанию</option>
               <option value="price_asc">Цена ↑</option>
@@ -310,10 +310,10 @@ export default function PublicWishlistPage() {
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center py-20 text-center">
-            <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
+            <svg className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8 4-8-4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
-            <p className="text-neutral-500 text-sm">{searchQuery ? 'Ничего не найдено' : 'Список пока пуст'}</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">{searchQuery ? 'Ничего не найдено' : 'Список пока пуст'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -327,14 +327,14 @@ export default function PublicWishlistPage() {
                   key={item.id}
                   className={`rounded-2xl overflow-hidden transition-all border ${
                     isFullyReserved
-                      ? 'bg-neutral-50 border-neutral-200/60 opacity-75'
+                      ? 'bg-neutral-50 dark:bg-neutral-800 border-neutral-200/60 dark:border-neutral-700 opacity-75'
                       : hasPartial
-                      ? 'bg-amber-50/50 border-amber-200/60 hover:shadow-md cursor-pointer'
-                      : 'bg-white/70 backdrop-blur-sm border-neutral-200/40 hover:border-neutral-200/70 hover:shadow-md cursor-pointer'
+                      ? 'bg-amber-50/50 dark:bg-amber-900/20 border-amber-200/60 dark:border-amber-700/40 hover:shadow-md cursor-pointer'
+                      : 'bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm border-neutral-200/40 dark:border-neutral-700 hover:border-neutral-200/70 dark:hover:border-neutral-600 hover:shadow-md cursor-pointer'
                   }`}
                   onClick={() => !isFullyReserved && setReserveItem(item)}
                 >
-                  <div className="relative aspect-square bg-neutral-100">
+                  <div className="relative aspect-square bg-neutral-100 dark:bg-neutral-700">
                     {(item.images && item.images.length > 1) ? (
                       <ImageCarousel images={item.images} alt={item.title} />
                     ) : (item.images && item.images.length > 0) || item.image_url ? (
@@ -360,7 +360,7 @@ export default function PublicWishlistPage() {
                   </div>
 
                   <div className="p-3">
-                    <h3 className="font-semibold text-neutral-900 text-sm line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="font-semibold text-neutral-900 dark:text-white text-sm line-clamp-2 min-h-[2.5rem]">
                       {item.url ? (
                         <a href={item.url} target="_blank" rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
@@ -373,35 +373,35 @@ export default function PublicWishlistPage() {
                       ) : item.title}
                     </h3>
                     {item.price != null && (
-                      <p className="text-sm font-semibold text-neutral-800 mt-1">
+                      <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mt-1">
                         {Number(item.price).toLocaleString('ru-RU')} {item.currency || '₽'}
                       </p>
                     )}
                     {hasPartial && (
                       <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-gray-200 dark:bg-neutral-600 rounded-full h-2">
                           <div className="bg-yellow-500 h-2 rounded-full transition-all" style={{ width: `${progress}%` }} />
                         </div>
                         {item.contributors && item.contributors.length > 0 ? (
-                          <div className="text-xs text-yellow-700 mt-1">
+                          <div className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
                             {item.contributors.map((c, i) => (
                               <span key={i}>{c.name}{c.amount ? ` — ${Number(c.amount).toLocaleString('ru-RU')} ${item.currency || '₽'}` : ''}{i < item.contributors!.length - 1 ? ', ' : ''}</span>
                             ))}
                           </div>
                         ) : item.reserved_by_name ? (
-                          <p className="text-xs text-yellow-700 mt-1">забронировал {item.reserved_by_name}</p>
+                          <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">забронировал {item.reserved_by_name}</p>
                         ) : null}
                       </div>
                     )}
                     {isFullyReserved && (
                       item.contributors && item.contributors.length > 0 ? (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 dark:text-neutral-400 mt-1">
                           {item.contributors.map((c, i) => (
                             <span key={i}>{c.name}{c.amount ? ` — ${Number(c.amount).toLocaleString('ru-RU')} ${item.currency || '₽'}` : ''}{i < item.contributors!.length - 1 ? ', ' : ''}</span>
                           ))}
                         </div>
                       ) : item.reserved_by_name ? (
-                        <p className="text-xs text-gray-500 mt-1">забронировал {item.reserved_by_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">забронировал {item.reserved_by_name}</p>
                       ) : null
                     )}
 
@@ -409,7 +409,7 @@ export default function PublicWishlistPage() {
                     {!isFullyReserved && !hasPartial && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setReserveItem(item) }}
-                        className="w-full mt-2 py-2 rounded-xl font-medium text-sm transition bg-neutral-900 text-white hover:bg-neutral-800"
+                        className="w-full mt-2 py-2 rounded-xl font-medium text-sm transition bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200"
                       >
                         Забронировать
                       </button>
@@ -418,14 +418,14 @@ export default function PublicWishlistPage() {
                       <div className="flex gap-1.5 mt-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); setReserveItem(item) }}
-                          className="flex-1 py-2 rounded-xl font-medium text-sm transition bg-neutral-900 text-white hover:bg-neutral-800"
+                          className="flex-1 py-2 rounded-xl font-medium text-sm transition bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-200"
                         >
                           Добавить вклад
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleUnreserve(item.id) }}
                           disabled={unreservingId === item.id}
-                          className="p-2 rounded-xl text-sm transition border border-neutral-200 text-neutral-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 disabled:opacity-50"
+                          className="p-2 rounded-xl text-sm transition border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
                           title="Отменить бронь"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -438,7 +438,7 @@ export default function PublicWishlistPage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); handleUnreserve(item.id) }}
                         disabled={unreservingId === item.id}
-                        className="w-full mt-2 py-2 rounded-xl font-medium text-sm transition border border-neutral-200 text-neutral-600 hover:bg-red-50 hover:border-red-200 hover:text-red-600 disabled:opacity-50"
+                        className="w-full mt-2 py-2 rounded-xl font-medium text-sm transition border border-neutral-200 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-50"
                       >
                         {unreservingId === item.id ? '...' : 'Отменить бронь'}
                       </button>
@@ -453,20 +453,20 @@ export default function PublicWishlistPage() {
 
       <footer className="mt-auto py-6 px-4">
         <div className="max-w-5xl mx-auto text-center">
-          <p className="text-[11px] text-neutral-400">&copy; {new Date().getFullYear()} Wishlist</p>
+          <p className="text-[11px] text-neutral-400 dark:text-neutral-500">&copy; {new Date().getFullYear()} Wishlist</p>
         </div>
       </footer>
 
       {/* Reservation Modal */}
       {reserveItem && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setReserveItem(null)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-neutral-900 mb-1">{reserveItem.title}</h3>
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl max-w-md w-full p-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-1">{reserveItem.title}</h3>
             {reserveItem.price && (
-              <p className="text-neutral-700 font-semibold mb-4">
+              <p className="text-neutral-700 dark:text-neutral-300 font-semibold mb-4">
                 {Number(reserveItem.price).toLocaleString('ru-RU')} {reserveItem.currency || '₽'}
                 {reserveItem.collected_amount > 0 && (
-                  <span className="text-sm font-normal text-neutral-500 ml-2">
+                  <span className="text-sm font-normal text-neutral-500 dark:text-neutral-400 ml-2">
                     (собрано {Number(reserveItem.collected_amount).toLocaleString('ru-RU')})
                   </span>
                 )}
@@ -474,10 +474,10 @@ export default function PublicWishlistPage() {
             )}
 
             {reserveItem.contributors && reserveItem.contributors.length > 0 && (
-              <div className="mb-3 p-3 bg-neutral-50 rounded-xl">
-                <p className="text-xs font-medium text-neutral-600 mb-1">Уже скинулись</p>
+              <div className="mb-3 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Уже скинулись</p>
                 {reserveItem.contributors.map((c, i) => (
-                  <p key={i} className="text-xs text-neutral-600">
+                  <p key={i} className="text-xs text-neutral-600 dark:text-neutral-400">
                     {c.name} — {Number(c.amount).toLocaleString('ru-RU')} {reserveItem.currency || '₽'}
                   </p>
                 ))}
@@ -486,21 +486,21 @@ export default function PublicWishlistPage() {
 
             {!isAuthenticated && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-neutral-700 mb-1">Ваше имя</label>
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Ваше имя</label>
                 <input type="text" value={guestName} onChange={(e) => setGuestName(e.target.value)}
                   placeholder="Как вас зовут?"
-                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-300 text-neutral-900" />
+                  className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500" />
               </div>
             )}
 
             {reserveItem.collected_amount > 0 ? (
-              <div className="mb-4 p-3 bg-neutral-50 rounded-xl">
-                <span className="text-sm text-neutral-600">Режим: Скинуться</span>
+              <div className="mb-4 p-3 bg-neutral-50 dark:bg-neutral-700 rounded-xl">
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">Режим: Скинуться</span>
               </div>
             ) : (
               <div className="flex gap-2 mb-4">
                 <button onClick={() => setReserveMode('full')}
-                  className={`flex-1 py-2 rounded-xl font-medium text-sm transition ${reserveMode === 'full' ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}>
+                  className={`flex-1 py-2 rounded-xl font-medium text-sm transition ${reserveMode === 'full' ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
                   Полностью
                 </button>
                 <button onClick={() => setReserveMode('partial')}
@@ -512,21 +512,21 @@ export default function PublicWishlistPage() {
 
             {reserveMode === 'partial' && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                   Сумма (макс. {Number((reserveItem.price || 0) - reserveItem.collected_amount).toLocaleString()} {reserveItem.currency || '₽'})
                 </label>
                 <input type="number" value={partialAmount} onChange={(e) => setPartialAmount(e.target.value)}
                   placeholder="0"
-                  className="w-full px-4 py-2.5 border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-300 text-neutral-900" />
+                  className="w-full px-4 py-2.5 border border-neutral-200 dark:border-neutral-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:focus:ring-neutral-500 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500" />
               </div>
             )}
 
             <div className="flex gap-2">
-              <button onClick={() => setReserveItem(null)} className="flex-1 py-2.5 border border-neutral-300 rounded-xl font-medium text-neutral-700 hover:bg-neutral-50 transition">
+              <button onClick={() => setReserveItem(null)} className="flex-1 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-xl font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition">
                 Отмена
               </button>
               <button onClick={handleReserve} disabled={isReserving || (!isAuthenticated && !guestName.trim())}
-                className="flex-1 py-2.5 bg-neutral-900 text-white rounded-xl font-medium hover:bg-neutral-800 disabled:bg-neutral-300 disabled:cursor-not-allowed transition">
+                className="flex-1 py-2.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-xl font-medium hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:bg-neutral-300 dark:disabled:bg-neutral-600 disabled:cursor-not-allowed transition">
                 {isReserving ? '...' : 'Забронировать'}
               </button>
             </div>

@@ -88,10 +88,10 @@ export default function NotificationsDropdown({ isOpen, onClose, onUpdate }: Not
   if (!isOpen) return null
 
   return (
-    <div ref={dropdownRef} className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+    <div ref={dropdownRef} className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-gray-200 dark:border-neutral-700 z-50 overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="font-bold text-gray-900">Уведомления</h3>
+      <div className="px-4 py-3 border-b border-gray-100 dark:border-neutral-700">
+        <h3 className="font-bold text-gray-900 dark:text-white">Уведомления</h3>
       </div>
 
       {/* Content */}
@@ -102,27 +102,27 @@ export default function NotificationsDropdown({ isOpen, onClose, onUpdate }: Not
           </div>
         ) : requests.length === 0 ? (
           <div className="text-center py-8 px-4">
-            <p className="text-gray-500 text-sm">Уведомлений нет</p>
+            <p className="text-gray-500 dark:text-neutral-400 text-sm">Уведомлений нет</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-neutral-700">
             {requests.map((request) => {
               const isProcessing = processingIds.has(request.id)
               return (
-                <div key={request.id} className="p-3 hover:bg-gray-50 transition">
+                <div key={request.id} className="p-3 hover:bg-gray-50 dark:hover:bg-neutral-700 transition">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {request.friend.avatar_url ? (
                         <img src={getAvatarUrl(request.friend.avatar_url) || ''} alt={request.friend.username} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-gray-600 font-medium">{request.friend.username[0].toUpperCase()}</span>
+                        <span className="text-gray-600 dark:text-neutral-400 font-medium">{request.friend.username[0].toUpperCase()}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 text-sm truncate">
+                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
                         {request.friend.full_name || request.friend.username}
                       </p>
-                      <p className="text-xs text-gray-500">Хочет добавить в друзья</p>
+                      <p className="text-xs text-gray-500 dark:text-neutral-400">Хочет добавить в друзья</p>
                     </div>
                   </div>
                   <div className="flex gap-2 ml-13">
@@ -131,7 +131,7 @@ export default function NotificationsDropdown({ isOpen, onClose, onUpdate }: Not
                       {isProcessing ? '...' : 'Принять'}
                     </button>
                     <button onClick={() => handleReject(request.id)} disabled={isProcessing}
-                      className="flex-1 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-400 text-gray-700 text-xs font-medium rounded-lg transition">
+                      className="flex-1 px-3 py-1.5 bg-gray-200 dark:bg-neutral-700 hover:bg-gray-300 dark:hover:bg-neutral-600 disabled:bg-gray-400 text-gray-700 dark:text-neutral-300 text-xs font-medium rounded-lg transition">
                       Отклонить
                     </button>
                   </div>

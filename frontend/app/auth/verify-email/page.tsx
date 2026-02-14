@@ -125,29 +125,29 @@ function VerifyEmailContent() {
   if (!email) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Подтвердите email</h1>
-          <p className="text-gray-600 text-sm">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Подтвердите email</h1>
+          <p className="text-gray-600 dark:text-neutral-400 text-sm">
             Мы отправили 6-значный код на<br />
-            <span className="font-medium text-gray-900">{email}</span>
+            <span className="font-medium text-gray-900 dark:text-white">{email}</span>
           </p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm mb-4">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm mb-4">
+          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm mb-4">
             {successMessage}
           </div>
         )}
@@ -163,7 +163,7 @@ function VerifyEmailContent() {
               value={digit}
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition text-gray-900"
+              className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition text-gray-900 dark:bg-neutral-700 dark:text-white"
               disabled={isLoading}
             />
           ))}
@@ -178,11 +178,11 @@ function VerifyEmailContent() {
         </button>
 
         <div className="text-center">
-          <p className="text-gray-600 text-sm mb-2">Не получили код?</p>
+          <p className="text-gray-600 dark:text-neutral-400 text-sm mb-2">Не получили код?</p>
           <button
             onClick={handleResend}
             disabled={resendCooldown > 0}
-            className="text-primary-600 hover:text-primary-700 font-medium text-sm disabled:text-gray-400"
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium text-sm disabled:text-gray-400 dark:disabled:text-neutral-500"
           >
             {resendCooldown > 0
               ? `Отправить повторно (${resendCooldown}с)`
@@ -191,7 +191,7 @@ function VerifyEmailContent() {
         </div>
 
         <div className="mt-6 text-center">
-          <Link href="/auth/register" className="text-sm text-gray-500 hover:text-gray-700">
+          <Link href="/auth/register" className="text-sm text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
             ← Изменить email
           </Link>
         </div>
@@ -204,7 +204,7 @@ export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-gray-400">Загрузка...</div>
+        <div className="animate-pulse text-gray-400 dark:text-neutral-500">Загрузка...</div>
       </div>
     }>
       <VerifyEmailContent />

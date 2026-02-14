@@ -53,22 +53,31 @@ async def _get_browser() -> Browser:
         if _browser is None:
             _pw = await async_playwright().start()
             import glob
-            chromium_paths = glob.glob(
-                "/root/.cache/ms-playwright/chromium-*/chrome-linux/chrome"
-            )
-            exe = chromium_paths[0] if chromium_paths else None
-            _browser = await _pw.chromium.launch(
-                executable_path=exe,
-                headless=True,
-                args=[
-                    "--headless=new",
+            import os
+            search_paths = [
+                "/root/.cache/ms-playwright/chromium-*/chrome-linux/chrome",
+                os.path.expanduser("~/.cache/ms-playwright/chromium-*/chrome-linux/chrome"),
+                os.path.expanduser("~/Library/Caches/ms-playwright/chromium-*/chrome-mac/Chromium.app/Contents/MacOS/Chromium"),
+            ]
+            exe = None
+            for pattern in search_paths:
+                found = glob.glob(pattern)
+                if found:
+                    exe = found[0]
+                    break
+            launch_opts = {
+                "headless": True,
+                "args": [
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
                     "--disable-dev-shm-usage",
                     "--disable-gpu",
                     "--disable-blink-features=AutomationControlled",
                 ],
-            )
+            }
+            if exe and os.path.isfile(exe):
+                launch_opts["executable_path"] = exe
+            _browser = await _pw.chromium.launch(**launch_opts)
             logger.info("Chromium launched (exe=%s)", exe)
     return _browser
 

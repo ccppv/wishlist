@@ -98,14 +98,14 @@ export default function GiftsPage() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-30 px-3 pt-3">
-        <div className="bg-header border border-gray-200/40 rounded-2xl shadow-sm">
+        <div className="bg-header border border-gray-200/40 dark:border-neutral-700/50 rounded-2xl shadow-sm">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-            <button onClick={() => router.push('/profile')} className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg transition">
+            <button onClick={() => router.push('/profile')} className="p-1.5 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg transition">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <h1 className="text-lg font-semibold text-neutral-900 tracking-tight">Подарки друзьям</h1>
+            <h1 className="text-lg font-semibold text-neutral-900 dark:text-white tracking-tight">Подарки друзьям</h1>
           </div>
         </div>
       </header>
@@ -121,14 +121,14 @@ export default function GiftsPage() {
             <svg className="w-12 h-12 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
             </svg>
-            <p className="text-neutral-500 text-sm mb-1">Пока пусто</p>
-            <p className="text-neutral-400 text-xs">Забронируйте подарки в вишлистах друзей</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-1">Пока пусто</p>
+            <p className="text-neutral-400 dark:text-neutral-500 text-xs">Забронируйте подарки в вишлистах друзей</p>
           </div>
         ) : (
           <div className="space-y-2.5">
             {pinned.length > 0 && (
               <>
-                <p className="text-[11px] uppercase tracking-widest text-neutral-400 font-medium px-1 mb-1">Закреплённые</p>
+                <p className="text-[11px] uppercase tracking-widest text-neutral-400 dark:text-neutral-500 font-medium px-1 mb-1">Закреплённые</p>
                 {pinned.map(item => (
                   <GiftCard
                     key={item.id}
@@ -161,7 +161,7 @@ export default function GiftsPage() {
       </main>
 
       <footer className="mt-auto py-6 text-center">
-        <p className="text-[11px] text-neutral-400">&copy; {new Date().getFullYear()} Wishlist</p>
+        <p className="text-[11px] text-neutral-400 dark:text-neutral-500">&copy; {new Date().getFullYear()} Wishlist</p>
       </footer>
     </div>
   )
@@ -237,7 +237,7 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
   const currency = item.currency || '₽'
 
   return (
-    <div className="relative rounded-2xl sm:overflow-visible overflow-hidden">
+    <div className={`relative rounded-2xl sm:overflow-visible overflow-hidden ${menuOpen ? 'z-50' : 'z-0'}`}>
       {/* Swipe actions (mobile) */}
       <div className="absolute right-0 top-0 bottom-0 flex sm:hidden" style={{ width: ACTIONS_WIDTH }}>
         <button
@@ -275,7 +275,7 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
 
       {/* Card */}
       <div
-        className="relative bg-white/70 backdrop-blur-sm border border-neutral-200/40 rounded-2xl p-4 touch-pan-y z-[1]"
+        className="relative bg-white/70 dark:bg-neutral-800/70 backdrop-blur-sm border border-neutral-200/40 dark:border-neutral-700/50 rounded-2xl p-4 touch-pan-y z-[1]"
         style={{
           transform: `translateX(${offset}px)`,
           transition: swiping ? 'none' : 'transform 0.3s cubic-bezier(.2,.9,.3,1)',
@@ -286,7 +286,7 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
       >
         <div className="flex gap-3.5">
           {/* Image */}
-          <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl bg-neutral-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+          <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl bg-neutral-100 dark:bg-neutral-700 flex-shrink-0 overflow-hidden flex items-center justify-center">
             {img ? (
               <img src={img} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -302,14 +302,14 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
               <div className="min-w-0 flex-1">
                 {item.url ? (
                   <a href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="text-sm font-semibold text-neutral-900 leading-snug line-clamp-1 hover:text-primary-600 transition">
+                    className="text-sm font-semibold text-neutral-900 dark:text-white leading-snug line-clamp-1 hover:text-primary-600 transition">
                     {item.title}
                   </a>
                 ) : (
-                  <p className="text-sm font-semibold text-neutral-900 leading-snug line-clamp-1">{item.title}</p>
+                  <p className="text-sm font-semibold text-neutral-900 dark:text-white leading-snug line-clamp-1">{item.title}</p>
                 )}
                 {item.wishlist && (
-                  <p className="text-xs text-neutral-400 mt-0.5 truncate">
+                  <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5 truncate">
                     {item.wishlist.owner_fullname || item.wishlist.owner_username}
                     <span className="mx-1">·</span>
                     {item.wishlist.title}
@@ -321,25 +321,25 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
               <div ref={menuRef} className="relative hidden sm:block flex-shrink-0">
                 <button
                   onClick={() => setMenuOpen(prev => !prev)}
-                  className="p-1 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition"
+                  className="p-1 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
                   </svg>
                 </button>
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-1 rounded-xl bg-white/90 backdrop-blur-lg shadow-xl border border-white/50 z-20 w-48 py-1">
+                  <div className="absolute right-0 top-full mt-1 rounded-xl bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg shadow-xl border border-white/50 dark:border-neutral-700 z-[60] w-48 py-1">
                     <button
                       onClick={() => { onTogglePin(item.id); setMenuOpen(false) }}
-                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-neutral-700 hover:bg-black/5"
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5"
                     >
-                      <svg className="w-[18px] h-[18px] text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                      <svg className="w-[18px] h-[18px] text-neutral-400 dark:text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M12 17v5" />
                         <path d="M9 10.76a2 2 0 01-1.11 1.79l-1.78.89A2 2 0 005 15.24V17h14v-1.76a2 2 0 00-1.11-1.79l-1.78-.89A2 2 0 0115 10.76V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v5.76z" />
                       </svg>
                       {item.is_pinned ? 'Открепить' : 'Закрепить'}
                     </button>
-                    <div className="h-px bg-neutral-200/60 mx-2 my-0.5" />
+                    <div className="h-px bg-neutral-200/60 dark:bg-neutral-700 mx-2 my-0.5" />
                     <button
                       onClick={() => { setMenuOpen(false); onCancel(item.id) }}
                       className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-500/10"
@@ -362,7 +362,7 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
                 </span>
               )}
               {item.price != null && item.price > 0 && item.collected_amount != null && (
-                <span className="text-xs text-neutral-400">
+                <span className="text-xs text-neutral-400 dark:text-neutral-500">
                   {item.collected_amount} / {item.price} {currency}
                 </span>
               )}
@@ -383,7 +383,7 @@ function GiftCard({ item, img, onCancel, onTogglePin, isSwipedOpen, onSwipeChang
 
             {/* Progress bar */}
             {item.price != null && item.price > 0 && item.collected_amount != null && (
-              <div className="mt-2.5 h-1 bg-neutral-100 rounded-full overflow-hidden">
+              <div className="mt-2.5 h-1 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-400 rounded-full transition-all"
                   style={{ width: `${Math.min(100, (Number(item.collected_amount) / item.price) * 100)}%` }}

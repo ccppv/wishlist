@@ -72,3 +72,7 @@ backend/uploads/
 # Временные скрипты
 _rewrite_*.py
 test_*.py
+
+# Документация .md (кроме контента страниц terms/privacy)
+*.md
+!frontend/content/*.md

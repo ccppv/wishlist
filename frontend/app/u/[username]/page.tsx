@@ -134,8 +134,8 @@ export default function UserProfilePage() {
 
     if (isAddingFriend) {
       return (
-        <button disabled className={`${btnBase} border border-neutral-300 text-neutral-400 cursor-not-allowed`}>
-          <span className="w-4 h-4 border-[2px] border-neutral-300 border-t-neutral-600 rounded-full animate-spin" />
+        <button disabled className={`${btnBase} border border-neutral-300 dark:border-neutral-600 text-neutral-400 dark:text-neutral-500 cursor-not-allowed`}>
+          <span className="w-4 h-4 border-[2px] border-neutral-300 dark:border-neutral-600 border-t-neutral-600 dark:border-t-neutral-300 rounded-full animate-spin" />
           Загрузка
         </button>
       )
@@ -144,7 +144,7 @@ export default function UserProfilePage() {
     switch (friendshipStatus.status) {
       case 'accepted':
         return (
-          <button onClick={handleRemoveFriend} className={`${btnBase} border border-neutral-300 text-neutral-700 bg-white hover:bg-red-50 hover:border-red-200 hover:text-red-600`}>
+          <button onClick={handleRemoveFriend} className={`${btnBase} border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-200 dark:hover:border-red-800 hover:text-red-600 dark:hover:text-red-400`}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -171,7 +171,7 @@ export default function UserProfilePage() {
         )
       case 'blocked':
         return (
-          <button disabled className={`${btnBase} border border-red-100 bg-red-50 text-red-500 cursor-default`}>
+          <button disabled className={`${btnBase} border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 cursor-default`}>
             Заблокирован
           </button>
         )
@@ -190,18 +190,18 @@ export default function UserProfilePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-[3px] border-neutral-300 border-t-neutral-800 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-[3px] border-neutral-300 dark:border-neutral-600 border-t-neutral-800 dark:border-t-neutral-200 rounded-full animate-spin" />
       </div>
     )
   }
 
   if (error || !user) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-neutral-900">
         <header className="sticky top-0 z-30 px-3 pt-3">
-          <div className="bg-header border border-gray-200/40 rounded-2xl shadow-sm">
+          <div className="bg-header border border-gray-200/40 dark:border-neutral-700/50 rounded-2xl shadow-sm">
             <div className="max-w-5xl mx-auto px-4 py-3">
-              <Link href="/profile" className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition">
+              <Link href="/profile" className="inline-flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -211,11 +211,11 @@ export default function UserProfilePage() {
           </div>
         </header>
         <main className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-          <svg className="w-14 h-14 text-neutral-300 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
+          <svg className="w-14 h-14 text-neutral-300 dark:text-neutral-600 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <p className="text-lg font-medium text-neutral-700 mb-1">{error || 'Пользователь не найден'}</p>
-          <Link href="/profile" className="text-sm text-neutral-500 hover:text-neutral-900 transition">
+          <p className="text-lg font-medium text-neutral-700 dark:text-neutral-300 mb-1">{error || 'Пользователь не найден'}</p>
+          <Link href="/profile" className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">
             Вернуться к профилю
           </Link>
         </main>
@@ -224,12 +224,12 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-neutral-900">
       {/* Header */}
       <header className="sticky top-0 z-30 px-3 pt-3">
-        <div className="bg-header border border-gray-200/40 rounded-2xl shadow-sm">
+        <div className="bg-header border border-gray-200/40 dark:border-neutral-700/50 rounded-2xl shadow-sm">
           <div className="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
-            <Link href="/profile" className="inline-flex items-center gap-2 text-neutral-500 hover:text-neutral-900 transition">
+            <Link href="/profile" className="inline-flex items-center gap-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
@@ -249,15 +249,15 @@ export default function UserProfilePage() {
             {user.avatar_url ? (
               <img src={getAvatarUrl(user.avatar_url) || ''} alt="" className="w-full h-full object-cover" />
             ) : (
-              <svg className="w-9 h-9 sm:w-11 sm:h-11 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <svg className="w-9 h-9 sm:w-11 sm:h-11 text-neutral-300 dark:text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             )}
           </div>
-          <h2 className="mt-4 text-xl sm:text-2xl font-bold text-neutral-900 tracking-tight">
+          <h2 className="mt-4 text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">
             {user.full_name || user.username}
           </h2>
-          <p className="mt-0.5 text-sm text-neutral-400">@{user.username}</p>
+          <p className="mt-0.5 text-sm text-neutral-400 dark:text-neutral-500">@{user.username}</p>
 
           {renderFriendAction() && (
             <div className="mt-5">

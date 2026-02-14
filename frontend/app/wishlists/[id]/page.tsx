@@ -93,20 +93,14 @@ export default function WishlistDetailPage() {
   const isEmpty = items.length === 0
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{
-        backgroundImage:
-          'radial-gradient(circle at top left, rgba(229,231,235,0.8), transparent 55%), radial-gradient(circle at bottom right, rgba(209,213,219,0.8), transparent 55%), linear-gradient(to bottom, #f9fafb, #e5e7eb)',
-      }}
-    >
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 via-gray-100/80 to-gray-200/60 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800">
       <div className="flex-1 max-w-4xl flex flex-col w-full mx-auto px-4 py-8">
         <div className="flex-1 rounded-2xl px-1 sm:px-2 py-3 sm:py-4">
           {/* Title block */}
           <div className="mb-4 text-center px-4">
-            <h1 className="text-2xl font-semibold text-gray-900">{wishlist.title}</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{wishlist.title}</h1>
             {wishlist.description && (
-              <p className="mt-2 text-sm text-gray-600 max-w-xl mx-auto">{wishlist.description}</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-neutral-400 max-w-xl mx-auto">{wishlist.description}</p>
             )}
           </div>
 
@@ -114,7 +108,7 @@ export default function WishlistDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push('/profile')}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-white/60 hover:text-gray-900 transition"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-neutral-300 hover:bg-white/60 dark:hover:bg-neutral-800/60 hover:text-gray-900 dark:hover:text-white transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -125,7 +119,7 @@ export default function WishlistDetailPage() {
               {!isEmpty && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-300 text-neutral-700 bg-white/80 hover:bg-neutral-50 hover:border-neutral-400 transition"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 bg-white/80 dark:bg-neutral-800 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-500 transition"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -139,7 +133,7 @@ export default function WishlistDetailPage() {
                   navigator.clipboard.writeText(url)
                   alert('Ссылка скопирована!')
                 }}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-lg transition"
                 title="Поделиться"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +152,7 @@ export default function WishlistDetailPage() {
                     setSelectedIds(new Set())
                   }}
                   className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-                    selectMode ? 'bg-primary-50 text-primary-700 border border-primary-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    selectMode ? 'bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-700' : 'bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-600'
                   }`}
                 >
                   {selectMode ? 'Отмена' : 'Выбрать'}
@@ -169,12 +163,12 @@ export default function WishlistDetailPage() {
 
           {/* Multi-select toolbar */}
           {selectMode && selectedIds.size > 0 && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-center justify-between">
-              <span className="text-sm text-red-700">Выбрано: {selectedIds.size}</span>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4 flex items-center justify-between">
+              <span className="text-sm text-red-700 dark:text-red-300">Выбрано: {selectedIds.size}</span>
               <button
                 onClick={handleBatchDelete}
                 disabled={isDeleting}
-                className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:bg-gray-300"
+                className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:bg-gray-300 dark:disabled:bg-neutral-600"
               >
                 {isDeleting ? 'Удаление...' : 'Удалить выбранные'}
               </button>
@@ -186,7 +180,7 @@ export default function WishlistDetailPage() {
             <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
               <div className="mb-5">
                 <svg
-                  className="w-12 h-12 text-neutral-400"
+                  className="w-12 h-12 text-neutral-400 dark:text-neutral-500"
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -224,7 +218,7 @@ export default function WishlistDetailPage() {
                   />
                 </svg>
               </div>
-              <p className="text-neutral-500 text-sm mb-6">Список пуст</p>
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Список пуст</p>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-neutral-300 text-neutral-700 bg-white/80 hover:bg-neutral-50 hover:border-neutral-400 transition"
@@ -252,7 +246,7 @@ export default function WishlistDetailPage() {
           )}
         </div>
 
-        <footer className="mt-auto pt-10 text-center text-[11px] text-neutral-500/80">
+        <footer className="mt-auto pt-10 text-center text-[11px] text-neutral-500/80 dark:text-neutral-400/80">
           Сделано с заботой о подарках · x1k.ru
         </footer>
       </div>

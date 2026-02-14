@@ -1,5 +1,5 @@
 """
-Wildberries parser — CDN approach, no browser needed.
+Wildberries parser — CDN + Playwright fallback for images.
 """
 
 import logging
@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import httpx
 
-from app.services.parsers.base import ProductParserError
+from app.services.parsers.base import ProductParserError, new_page
 
 logger = logging.getLogger("parser")
 
@@ -40,9 +40,55 @@ def _cdn_base(article: str) -> str:
     return f"https://basket-{b}.wbbasket.ru/vol{vol}/part{part}/{nm}"
 
 
-def _image_urls(article: str, count: int = 10) -> List[str]:
+def _image_urls_cdn(article: str, count: int = 10) -> List[str]:
     base = _cdn_base(article)
     return [f"{base}/images/c516x688/{i}.webp" for i in range(1, count + 1)]
+
+
+async def _images_from_page(url: str) -> List[str]:
+    images: List[str] = []
+    try:
+        async with new_page() as page:
+            await page.goto(url, wait_until="domcontentloaded", timeout=25000)
+            await page.wait_for_timeout(3000)
+
+            data = await page.evaluate("""() => {
+                const imgs = [];
+                const seen = new Set();
+                const add = (src) => {
+                    if (!src || seen.has(src) || src.includes('icon') || src.includes('logo') || src.includes('placeholder')) return;
+                    src = src.replace(/\\/s\\d+\\//g, '/s800/').replace(/\\/c\\d+x\\d+\\//g, '/c516x688/');
+                    seen.add(src);
+                    imgs.push(src);
+                };
+                document.querySelectorAll('img[src*="wbbasket"], img[src*="wbimg"], [class*="gallery"] img, [class*="carousel"] img, [class*="slide"] img').forEach(img => {
+                    add(img.src || img.dataset.src || img.getAttribute('data-src'));
+                });
+                document.querySelectorAll('script').forEach(s => {
+                    const m = s.textContent && s.textContent.match(/https?:\\/\\/[^"']+wbbasket[^"']+\\/images[^"']+/g);
+                    if (m) m.forEach(u => add(u));
+                });
+                const meta = document.querySelector('meta[property="og:image"]');
+                if (meta && meta.content) add(meta.content);
+                return imgs;
+            }""")
+            images = data or []
+    except Exception as e:
+        logger.warning("WB Playwright images failed: %s", e)
+    return images[:10]
+
+
+async def _validate_images(urls: List[str], max_check: int = 5) -> List[str]:
+    valid: List[str] = []
+    async with httpx.AsyncClient(timeout=5) as client:
+        for u in urls[:max_check]:
+            try:
+                r = await client.head(u)
+                if r.status_code == 200:
+                    valid.append(u)
+            except Exception:
+                pass
+    return valid
 
 
 async def parse(url: str) -> dict:
@@ -57,7 +103,6 @@ async def parse(url: str) -> dict:
     photo_count = 10
 
     async with httpx.AsyncClient(timeout=15) as client:
-        # card.json — title, brand, description, photo_count
         try:
             r = await client.get(f"{cdn_base}/info/ru/card.json")
             if r.status_code == 200:
@@ -72,11 +117,10 @@ async def parse(url: str) -> dict:
                 description = (card.get("description") or "")[:500] or None
                 media = card.get("media")
                 if isinstance(media, dict) and media.get("photo_count"):
-                    photo_count = media["photo_count"]
+                    photo_count = min(media["photo_count"], 10)
         except Exception as e:
             logger.warning("WB card.json failed for %s: %s", article, e)
 
-        # price-history.json
         try:
             r = await client.get(f"{cdn_base}/info/price-history.json")
             if r.status_code == 200:
@@ -89,11 +133,16 @@ async def parse(url: str) -> dict:
         except Exception as e:
             logger.warning("WB price-history.json failed for %s: %s", article, e)
 
-    images = _image_urls(article, photo_count)
+    images = await _images_from_page(url)
+    if not images:
+        cdn_urls = _image_urls_cdn(article, photo_count)
+        images = await _validate_images(cdn_urls, photo_count)
+    if not images:
+        images = _image_urls_cdn(article, min(3, photo_count))
 
     return {
         "title": title,
         "price": price,
-        "images": images,
+        "images": images[:10],
         "description": description,
     }

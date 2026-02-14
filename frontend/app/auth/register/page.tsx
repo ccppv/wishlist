@@ -22,6 +22,7 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -78,17 +79,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Регистрация</h1>
-          <p className="text-gray-600">Создайте аккаунт, чтобы начать</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Регистрация</h1>
+          <p className="text-gray-600 dark:text-neutral-400">Создайте аккаунт, чтобы начать</p>
         </div>
 
         {/* Google Sign-In */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 rounded-lg transition-colors mb-6"
+          className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-700 border-2 border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-600 text-gray-700 dark:text-neutral-200 font-medium py-3 rounded-lg transition-colors mb-6"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -101,22 +102,22 @@ export default function RegisterPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-gray-200 dark:border-neutral-600"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">или</span>
+            <span className="px-4 bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-400">или</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
               Email
             </label>
             <input
@@ -125,13 +126,13 @@ export default function RegisterPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:bg-neutral-700 dark:text-white"
               placeholder="example@mail.com"
             />
           </div>
 
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
               Имя пользователя
             </label>
             <input
@@ -140,13 +141,13 @@ export default function RegisterPage() {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:bg-neutral-700 dark:text-white"
               placeholder="username"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
               Пароль
             </label>
             <input
@@ -155,13 +156,13 @@ export default function RegisterPage() {
               required
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:bg-neutral-700 dark:text-white"
               placeholder="••••••••"
             />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
               Подтвердите пароль
             </label>
             <input
@@ -170,31 +171,46 @@ export default function RegisterPage() {
               required
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:bg-neutral-700 dark:text-white"
               placeholder="••••••••"
             />
           </div>
 
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={e => setAgreed(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-neutral-600 text-primary-600 focus:ring-primary-500"
+            />
+            <span className="text-xs text-gray-500 dark:text-neutral-400 leading-relaxed">
+              Я принимаю{' '}
+              <a href="/terms" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">пользовательское соглашение</a>
+              {' '}и{' '}
+              <a href="/privacy" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">политику конфиденциальности</a>
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition-colors"
+            disabled={isLoading || !agreed}
+            className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 dark:disabled:bg-neutral-600 text-white font-semibold py-3 rounded-lg transition-colors"
           >
             {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-neutral-400">
             Уже есть аккаунт?{' '}
-            <Link href="/auth/login" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link href="/auth/login" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
               Войти
             </Link>
           </p>
         </div>
 
         <div className="mt-4 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+          <Link href="/" className="text-sm text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
             ← Вернуться на главную
           </Link>
         </div>
