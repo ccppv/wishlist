@@ -42,9 +42,28 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days (7 * 24 * 60)
     
+    @field_validator("SECRET_KEY", mode="after")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        if v == "your-secret-key-change-in-production":
+            raise ValueError(
+                "SECRET_KEY must be set in environment variables. "
+                "Default value is not allowed in production."
+            )
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters long")
+        return v
+    
     # SMTP
     SMTP_HOST: str = "localhost"
     SMTP_PORT: int = 465
+
+    @field_validator("SMTP_PORT", mode="before")
+    @classmethod
+    def parse_smtp_port(cls, v):
+        if v == "" or v is None:
+            return 465
+        return int(v) if isinstance(v, str) else v
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_FROM: str = "noreply@x1k.ru"

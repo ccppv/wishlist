@@ -1,8 +1,10 @@
 """
 WebSocket endpoints - supports both user IDs and share_token channels
 """
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import Dict, List
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
+from typing import Dict, List, Optional
+from jose import JWTError, jwt
+from app.core.config import settings
 import json
 
 router = APIRouter()
@@ -52,11 +54,39 @@ manager = ConnectionManager()
 
 
 @router.websocket("/{client_id}")
-async def websocket_endpoint(websocket: WebSocket, client_id: str):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    client_id: str,
+    token: Optional[str] = Query(None)
+):
     """
-    WebSocket endpoint.
-    client_id can be a user ID (e.g. "4") or a share token channel (e.g. "share_abc123")
+    WebSocket endpoint with JWT authentication.
+    - For user_id channels (numeric client_id): JWT token required
+    - For share_token channels (client_id starting with 'share_'): token optional
+    - Token passed as query parameter: ?token=xxx
     """
+    # Check if this is a user channel (numeric ID) or share token channel
+    is_user_channel = client_id.isdigit()
+    
+    # Verify JWT token if provided or required
+    authenticated_user_id = None
+    if token:
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+            authenticated_user_id = payload.get("sub")
+        except JWTError:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid token")
+            return
+    
+    # For user channels, require authentication and verify user owns the channel
+    if is_user_channel:
+        if not authenticated_user_id:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Authentication required")
+            return
+        if str(authenticated_user_id) != client_id:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized")
+            return
+    
     await manager.connect(websocket, client_id)
     try:
         while True:

@@ -72,12 +72,14 @@ export default function Home() {
 
             <div className="grid sm:grid-cols-3 gap-6 sm:gap-8">
               {[
-                { num: '01', title: 'Создай вишлист', desc: 'Добавь подарки вручную или вставь ссылку — название, цена и фото подтянутся автоматически', icon: '✨' },
-                { num: '02', title: 'Поделись ссылкой', desc: 'Друзья смогут зарезервировать подарок в один клик, даже без регистрации', icon: '🔗' },
-                { num: '03', title: 'Получи подарок', desc: 'Никаких дублей и ненужных сюрпризов — каждый подарок точно тот, что ты хотел', icon: '🎁' },
+                { num: '01', title: 'Создай вишлист', desc: 'Добавь подарки вручную или вставь ссылку — название, цена и фото подтянутся автоматически', img: '/images/create_wishlist.png' },
+                { num: '02', title: 'Поделись ссылкой', desc: 'Друзья смогут зарезервировать подарок в один клик, даже без регистрации', img: '/images/share_link.png' },
+                { num: '03', title: 'Получи подарок', desc: 'Никаких дублей и ненужных сюрпризов — каждый подарок точно тот, что ты хотел', img: '/images/gift.png' },
               ].map(step => (
                 <div key={step.num} className="relative p-6 rounded-2xl bg-white/50 dark:bg-neutral-800/50 border border-neutral-200/50 dark:border-neutral-700/50 hover:border-neutral-300 dark:hover:border-neutral-600 transition group">
-                  <div className="text-3xl mb-4">{step.icon}</div>
+                  <div className="mb-4">
+                    <img src={step.img} alt="" className="w-28 h-28 sm:w-32 sm:h-32 object-contain" />
+                  </div>
                   <div className="text-xs font-bold text-primary-500 dark:text-primary-400 mb-2 tracking-wider">{step.num}</div>
                   <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">{step.title}</h3>
                   <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">{step.desc}</p>
@@ -117,7 +119,7 @@ export default function Home() {
               <div className="flex justify-center">
                 <div className="w-64 h-80 rounded-3xl bg-gradient-to-br from-primary-100 to-violet-100 dark:from-primary-900/40 dark:to-violet-900/40 border border-primary-200/50 dark:border-primary-800/30 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-6xl mb-4">🎁</div>
+                    <img src="/images/gift.png" alt="" className="w-36 h-36 sm:w-40 sm:h-40 object-contain mx-auto mb-4" />
                     <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Ваш идеальный подарок</p>
                   </div>
                 </div>

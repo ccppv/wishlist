@@ -39,6 +39,12 @@ services:
       dockerfile: Dockerfile
     container_name: wishlist_backend
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\" || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     environment:
       - POSTGRES_SERVER=db
       - POSTGRES_USER=${POSTGRES_USER}

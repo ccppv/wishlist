@@ -13,7 +13,7 @@ interface WebSocketMessage {
 
 export function useWebSocket(onMessage?: (message: WebSocketMessage) => void) {
   const wsRef = useRef<WebSocket | null>(null)
-  const { user } = useAuthStore()
+  const { user, token } = useAuthStore()
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>()
   const onMessageRef = useRef(onMessage)
   const activeRef = useRef(false) // controls whether reconnect is allowed
@@ -24,7 +24,7 @@ export function useWebSocket(onMessage?: (message: WebSocketMessage) => void) {
   }, [onMessage])
 
   const connect = useCallback(() => {
-    if (!user || !activeRef.current) return
+    if (!user || !token || !activeRef.current) return
     if (typeof window === 'undefined') return
 
     // Close existing connection silently
@@ -35,9 +35,12 @@ export function useWebSocket(onMessage?: (message: WebSocketMessage) => void) {
     }
 
     const envWs = process.env.NEXT_PUBLIC_WS_URL
-    const wsUrl = envWs
+    const baseWsUrl = envWs
       ? `${envWs}/api/v1/ws/${user.id}`
       : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/v1/ws/${user.id}`
+    
+    // Add JWT token as query parameter
+    const wsUrl = `${baseWsUrl}?token=${encodeURIComponent(token)}`
 
     try {
       const ws = new WebSocket(wsUrl)
@@ -70,7 +73,7 @@ export function useWebSocket(onMessage?: (message: WebSocketMessage) => void) {
     } catch {
       // WebSocket constructor can throw in some browsers
     }
-  }, [user])
+  }, [user, token])
 
   useEffect(() => {
     activeRef.current = true

@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Body, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from sqlalchemy.sql import func
 from sqlalchemy.orm import selectinload, joinedload
 from typing import List, Optional
 from decimal import Decimal
+from datetime import datetime, timedelta
 import json
 import uuid
+import secrets
 from pathlib import Path
 from app.db.session import get_db
 from app.models.user import User
@@ -14,6 +16,7 @@ from app.models.item import Item as ItemModel
 from app.models.wishlist import Wishlist as WishlistModel
 from app.models.friendship import Friendship as FriendshipModel, FriendshipStatusEnum
 from app.models.reservation import Reservation, ReservationStatusEnum
+from app.models.guest_session import GuestSession
 from app.schemas.item import Item, ItemCreate, ItemUpdate, ReserveRequest, ReservedItemDetail, WishlistInfo, ItemCopyRequest
 from app.schemas.parser import ParseProductRequest, ParsedProductData
 from app.api.dependencies import get_current_user, get_current_user_optional
@@ -327,6 +330,7 @@ async def copy_item_to_wishlist(
 @router.post("/{item_id}/reserve", response_model=Item)
 async def reserve_item(
     item_id: int,
+    request: Request,
     body: ReserveRequest = Body(ReserveRequest()),
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
@@ -334,11 +338,43 @@ async def reserve_item(
     """
     Reserve an item. Works for both authenticated and anonymous users.
     Anonymous users must provide a name in the request body.
+    Creates GuestSession for anonymous reservations.
     """
     if current_user:
         reserver_name = current_user.full_name or current_user.username
+        guest_session = None
     elif body.name:
         reserver_name = body.name.strip()
+        
+        # Get or create guest session for anonymous user
+        session_token = request.cookies.get("guest_session_token")
+        
+        if session_token:
+            # Try to find existing guest session
+            result = await db.execute(
+                select(GuestSession).where(
+                    and_(
+                        GuestSession.session_token == session_token,
+                        GuestSession.expires_at > datetime.utcnow()
+                    )
+                )
+            )
+            guest_session = result.scalar_one_or_none()
+        else:
+            guest_session = None
+        
+        # Create new guest session if needed
+        if not guest_session:
+            session_token = secrets.token_urlsafe(32)
+            guest_session = GuestSession(
+                session_token=session_token,
+                display_name=reserver_name,
+                ip_address=request.client.host if request.client else None,
+                user_agent=request.headers.get("user-agent"),
+                expires_at=datetime.utcnow() + timedelta(days=30)
+            )
+            db.add(guest_session)
+            await db.flush()  # Get the ID
     else:
         raise HTTPException(status_code=400, detail="Укажите ваше имя для бронирования")
 
@@ -421,6 +457,26 @@ async def reserve_item(
             reservation = Reservation(
                 item_id=item.id,
                 user_id=current_user.id,
+                status=ReservationStatusEnum.ACTIVE
+            )
+            db.add(reservation)
+    else:
+        # For anonymous users, create reservation with guest_session_id
+        existing_reservation_result = await db.execute(
+            select(Reservation).where(
+                and_(
+                    Reservation.item_id == item.id,
+                    Reservation.guest_session_id == guest_session.id,
+                    Reservation.status == ReservationStatusEnum.ACTIVE
+                )
+            )
+        )
+        existing_reservation = existing_reservation_result.scalar_one_or_none()
+        
+        if not existing_reservation:
+            reservation = Reservation(
+                item_id=item.id,
+                guest_session_id=guest_session.id,
                 status=ReservationStatusEnum.ACTIVE
             )
             db.add(reservation)

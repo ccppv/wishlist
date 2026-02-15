@@ -64,14 +64,19 @@ backend/uploads/
 # Cursor
 .cursor/
 
+# Archives / artifacts
+*.tar.gz
+*.zip
+
 # Backup
 *.bak
 *.bak2
 *~
 
-# Временные скрипты
-_rewrite_*.py
-test_*.py
+# Временные скрипты (только в корне)
+/_rewrite_*.py
+/test_*.py
+backend/test_parsers_local.py
 
 # Документация .md (кроме контента страниц terms/privacy)
 *.md

@@ -66,7 +66,10 @@ export default function WishlistDetailPage() {
     if (!confirm(`Удалить ${selectedIds.size} подарков?`)) return
     setIsDeleting(true)
     try {
-      await apiClient.post('/items/delete-batch', Array.from(selectedIds))
+      const ids = Array.from(selectedIds)
+      await apiClient.post('/items/delete-batch', { item_ids: ids }, {
+        headers: { 'Content-Type': 'application/json' },
+      })
       setSelectedIds(new Set())
       setSelectMode(false)
       fetchWishlist()

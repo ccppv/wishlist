@@ -1,12 +1,13 @@
 """
 Main FastAPI application
 """
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from contextlib import asynccontextmanager
-from pathlib import Path
-import os
 
 from app.core.config import settings
 from app.api.v1 import api_router
@@ -14,6 +15,8 @@ from app.api.google_auth import router as google_auth_router
 from app.db.session import init_db
 from app.services.parsers import shutdown_browser
 from app.services.verification import close_redis
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -28,12 +31,12 @@ async def lifespan(app: FastAPI):
     (uploads_dir / "avatars").mkdir(exist_ok=True)
     (uploads_dir / "items").mkdir(exist_ok=True)
     
-    print("🚀 Application started")
+    logger.info("Application started")
     yield
     # Shutdown
     await shutdown_browser()
     await close_redis()
-    print("👋 Application shutdown")
+    logger.info("Application shutdown")
 
 
 app = FastAPI(
@@ -56,6 +59,11 @@ app.add_middleware(
 uploads_path = Path("uploads")
 if uploads_path.exists() and uploads_path.is_dir():
     app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+# Landing page images (served by backend for reliable static delivery)
+static_images = Path("static/images")
+if static_images.exists() and static_images.is_dir():
+    app.mount("/images", StaticFiles(directory="static/images"), name="images")
 
 #Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)

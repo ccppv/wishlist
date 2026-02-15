@@ -46,15 +46,40 @@ async def update_current_user(
     
     # Handle avatar upload
     if avatar:
+        # Validate file type
+        ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
+        
+        if not avatar.content_type or not avatar.content_type.startswith("image/"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File must be an image"
+            )
+        
+        # Read and validate file size
+        contents = await avatar.read()
+        if len(contents) > 5 * 1024 * 1024:  # 5MB
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Image must be less than 5MB"
+            )
+        
+        # Validate extension
+        ext = avatar.filename.rsplit(".", 1)[-1].lower() if avatar.filename and "." in avatar.filename else "jpg"
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file extension. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+        
         uploads_dir = Path("uploads/avatars")
         uploads_dir.mkdir(parents=True, exist_ok=True)
         
-        file_extension = Path(avatar.filename).suffix
-        filename = f"{uuid.uuid4()}{file_extension}"
+        filename = f"{uuid.uuid4()}.{ext}"
         file_path = uploads_dir / filename
         
+        # Write the already-read contents
         with file_path.open("wb") as buffer:
-            shutil.copyfileobj(avatar.file, buffer)
+            buffer.write(contents)
         
         current_user.avatar_url = f"/uploads/avatars/{filename}"
     

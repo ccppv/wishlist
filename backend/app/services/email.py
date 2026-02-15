@@ -1,8 +1,11 @@
 """Email sending service"""
+import logging
 import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 async def send_verification_email(email: str, code: str) -> bool:
@@ -57,8 +60,8 @@ async def send_verification_email(email: str, code: str) -> bool:
         # port 25: plain SMTP, no TLS
 
         await aiosmtplib.send(msg, **smtp_kwargs)
-        print(f"✅ Verification email sent to {email}")
+        logger.info("Verification email sent to %s", email)
         return True
     except Exception as e:
-        print(f"❌ Email send error to {email}: {e}")
+        logger.exception("Email send error to %s: %s", email, e)
         return False
