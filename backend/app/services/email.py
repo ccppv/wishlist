@@ -1,5 +1,6 @@
 """Email sending service"""
 import logging
+import ssl
 import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -39,27 +40,41 @@ async def send_verification_email(email: str, code: str) -> bool:
     msg.attach(MIMEText(text, "plain", "utf-8"))
     msg.attach(MIMEText(html, "html", "utf-8"))
 
+    host = settings.SMTP_HOST
+    port = settings.SMTP_PORT
+
     try:
-        smtp_kwargs = {
-            "hostname": settings.SMTP_HOST,
-            "port": settings.SMTP_PORT,
-        }
+        if port == 465:
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            smtp_client = aiosmtplib.SMTP(
+                hostname=host,
+                port=port,
+                use_tls=True,
+                tls_context=context,
+            )
+            await smtp_client.connect(server_hostname=host)
+        elif port == 587:
+            smtp_client = aiosmtplib.SMTP()
+            await smtp_client.connect(
+                hostname=host,
+                port=port,
+                start_tls=True,
+            )
+        else:
+            smtp_client = aiosmtplib.SMTP()
+            await smtp_client.connect(
+                hostname=host,
+                port=port,
+            )
 
-        # Auth if provided
         if settings.SMTP_USER:
-            smtp_kwargs["username"] = settings.SMTP_USER
-            smtp_kwargs["password"] = settings.SMTP_PASSWORD
+            await smtp_client.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
 
-        # TLS mode based on port
-        if settings.SMTP_PORT == 465:
-            smtp_kwargs["use_tls"] = True
-            smtp_kwargs["validate_certs"] = False
-        elif settings.SMTP_PORT == 587:
-            smtp_kwargs["start_tls"] = True
-            smtp_kwargs["validate_certs"] = False
-        # port 25: plain SMTP, no TLS
+        await smtp_client.send_message(msg)
+        await smtp_client.quit()
 
-        await aiosmtplib.send(msg, **smtp_kwargs)
         logger.info("Verification email sent to %s", email)
         return True
     except Exception as e:

@@ -1,8 +1,10 @@
 """Verification code service using Redis"""
 import random
+import logging
 import redis.asyncio as aioredis
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
 _redis = None
 
 
@@ -23,6 +25,10 @@ async def generate_verification_code(email: str) -> str:
     attempts_key = f"verify_attempts:{email}"
     await r.incr(attempts_key)
     await r.expire(attempts_key, 3600)
+    
+    logger.warning(f"🔑 VERIFICATION CODE for {email}: {code}")
+    print(f"VERIFICATION_CODE {email}: {code}", flush=True)
+    
     return code
 
 

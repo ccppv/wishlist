@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Body, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File, Body, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_
 from sqlalchemy.sql import func
@@ -19,7 +19,7 @@ from app.models.reservation import Reservation, ReservationStatusEnum
 from app.models.guest_session import GuestSession
 from app.schemas.item import Item, ItemCreate, ItemUpdate, ReserveRequest, ReservedItemDetail, WishlistInfo, ItemCopyRequest
 from app.schemas.parser import ParseProductRequest, ParsedProductData
-from app.api.dependencies import get_current_user, get_current_user_optional
+from app.api.dependencies import get_current_user, get_current_active_user, get_current_user_optional
 from app.services.parsers import parse_product_from_url, ProductParserError
 from app.api.v1.endpoints.websocket import manager
 
@@ -33,7 +33,7 @@ UPLOAD_DIR = Path("uploads/items")
 @router.post("/upload-image", response_model=dict)
 async def upload_item_image(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Upload an image for an item. Returns the URL."""
     ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "gif"}
@@ -65,7 +65,7 @@ async def upload_item_image(
 async def delete_items_batch(
     item_ids: List[int] = Body(..., embed=True),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Delete multiple items at once (owner only)"""
     if not item_ids:
@@ -95,11 +95,12 @@ async def delete_items_batch(
 # ── CRUD ───────────────────────────────────────────────────────────────────────
 
 @router.post("", response_model=Item, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=Item, status_code=status.HTTP_201_CREATED)
 async def create_item(
     wishlist_id: int = Query(..., description="ID вишлиста"),
     item_data: ItemCreate = Body(...),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Create a new item in a wishlist"""
     wishlist = await _get_owned_wishlist(db, wishlist_id, current_user.id)
@@ -122,10 +123,11 @@ async def create_item(
 
 
 @router.get("", response_model=List[Item])
+@router.get("/", response_model=List[Item])
 async def get_items(
     wishlist_id: int = Query(..., description="ID вишлиста"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get all items in a wishlist"""
     # Verify access to wishlist
@@ -164,7 +166,7 @@ async def get_items(
 @router.get("/my-reservations", response_model=List[ReservedItemDetail])
 async def get_my_reservations(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get all items the current user has reserved with full details"""
     # МАКСИМАЛЬНО ПРОСТОЕ РЕШЕНИЕ: берём все items где reserved_by_id = current_user.id
@@ -273,12 +275,97 @@ async def get_my_reservations(
     return response
 
 
+
+@router.get("/my-reservations-guest", response_model=List[ReservedItemDetail])
+async def get_my_reservations_guest(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+):
+    """Get reservations for guest session (X-Guest-Session-Token header)"""
+    session_token = request.headers.get("X-Guest-Session-Token")
+    if not session_token:
+        raise HTTPException(status_code=401, detail="X-Guest-Session-Token required")
+
+    result = await db.execute(
+        select(GuestSession).where(
+            and_(
+                GuestSession.session_token == session_token,
+                GuestSession.expires_at > datetime.utcnow()
+            )
+        )
+    )
+    guest_session = result.scalar_one_or_none()
+    if not guest_session:
+        raise HTTPException(status_code=401, detail="Сессия истекла или не найдена")
+
+    res_result = await db.execute(
+        select(Reservation)
+        .where(
+            and_(
+                Reservation.guest_session_id == guest_session.id,
+                Reservation.status == ReservationStatusEnum.ACTIVE
+            )
+        )
+    )
+    reservations = res_result.scalars().all()
+    item_ids = [r.item_id for r in reservations]
+    if not item_ids:
+        return []
+
+    items_result = await db.execute(
+        select(ItemModel)
+        .options(
+            selectinload(ItemModel.wishlist).selectinload(WishlistModel.owner),
+            selectinload(ItemModel.reservations)
+        )
+        .where(ItemModel.id.in_(item_ids))
+    )
+    items = {item.id: item for item in items_result.scalars().all()}
+    guest_name = (guest_session.display_name or "").lower()
+
+    response = []
+    for res in reservations:
+        item = items.get(res.item_id)
+        if not item:
+            continue
+        if item.contributors:
+            found = any(
+                (c.get("name", "") or "").lower() == guest_name
+                for c in item.contributors
+                if isinstance(c, dict)
+            )
+            if not found and item.reserved_by_name and item.reserved_by_name.lower() != guest_name:
+                continue
+        wishlist_info = None
+        if item.wishlist:
+            wishlist_info = WishlistInfo(
+                id=item.wishlist.id,
+                title=item.wishlist.title,
+                event_date=item.wishlist.event_date,
+                wishlist_type=item.wishlist.wishlist_type.value,
+                owner_username=item.wishlist.owner.username if item.wishlist.owner else "",
+                owner_fullname=item.wishlist.owner.full_name if item.wishlist.owner else None
+            )
+        item_dict = {
+            "id": item.id, "title": item.title, "description": item.description, "url": item.url,
+            "image_url": item.image_url, "images": item.images or [], "price": item.price,
+            "currency": item.currency, "target_amount": item.target_amount, "priority": item.priority,
+            "wishlist_id": item.wishlist_id, "collected_amount": item.collected_amount,
+            "is_reserved": item.is_reserved, "is_purchased": item.is_purchased,
+            "reserved_by_name": item.reserved_by_name, "contributors": item.contributors or [],
+            "position_order": item.position_order, "created_at": item.created_at,
+            "updated_at": item.updated_at, "reserved_at": res.reserved_at, "wishlist": wishlist_info
+        }
+        response.append(ReservedItemDetail(**item_dict))
+
+    return sorted(response, key=lambda x: x.reserved_at or x.created_at, reverse=True)
+
 @router.post("/{item_id}/copy-to-wishlist", response_model=Item)
 async def copy_item_to_wishlist(
     item_id: int,
     body: ItemCopyRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Create a copy of an item in another wishlist.
@@ -331,6 +418,7 @@ async def copy_item_to_wishlist(
 async def reserve_item(
     item_id: int,
     request: Request,
+    response: Response,
     body: ReserveRequest = Body(ReserveRequest()),
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
@@ -340,14 +428,15 @@ async def reserve_item(
     Anonymous users must provide a name in the request body.
     Creates GuestSession for anonymous reservations.
     """
+    guest_token_for_response = None
     if current_user:
         reserver_name = current_user.full_name or current_user.username
         guest_session = None
     elif body.name:
         reserver_name = body.name.strip()
         
-        # Get or create guest session for anonymous user
-        session_token = request.cookies.get("guest_session_token")
+        # Get or create guest session for anonymous user (header for iOS, cookie for web)
+        session_token = request.headers.get("X-Guest-Session-Token") or request.cookies.get("guest_session_token")
         
         if session_token:
             # Try to find existing guest session
@@ -360,6 +449,8 @@ async def reserve_item(
                 )
             )
             guest_session = result.scalar_one_or_none()
+            if guest_session:
+                guest_token_for_response = session_token
         else:
             guest_session = None
         
@@ -375,6 +466,7 @@ async def reserve_item(
             )
             db.add(guest_session)
             await db.flush()  # Get the ID
+        guest_token_for_response = session_token
     else:
         raise HTTPException(status_code=400, detail="Укажите ваше имя для бронирования")
 
@@ -389,13 +481,23 @@ async def reserve_item(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    wishlist_result = await db.execute(select(WishlistModel).where(WishlistModel.id == item.wishlist_id))
+    wishlist_result = await db.execute(
+        select(WishlistModel).options(selectinload(WishlistModel.owner)).where(WishlistModel.id == item.wishlist_id)
+    )
     wishlist = wishlist_result.scalar_one_or_none()
     if not wishlist:
         raise HTTPException(status_code=404, detail="Wishlist not found")
 
     if current_user and wishlist.owner_id == current_user.id:
         raise HTTPException(status_code=403, detail="Нельзя бронировать свои подарки")
+
+    if not current_user and wishlist.owner:
+        owner = wishlist.owner
+        reserver_lower = (reserver_name or "").strip().lower()
+        owner_names = {(owner.full_name or "").strip().lower(), (owner.username or "").strip().lower()}
+        owner_names.discard("")
+        if reserver_lower in owner_names:
+            raise HTTPException(status_code=403, detail="Нельзя бронировать свои подарки")
 
     if item.is_reserved and not amount:
         raise HTTPException(status_code=400, detail="Подарок уже забронирован")
@@ -412,9 +514,14 @@ async def reserve_item(
         item.reserved_by_name = reserver_name
         if item.price:
             item.collected_amount = item.price
-            existing_contributors.append({"name": reserver_name, "amount": float(item.price)})
+            contrib = {"name": reserver_name, "amount": float(item.price)}
         else:
-            existing_contributors.append({"name": reserver_name, "amount": 0})
+            contrib = {"name": reserver_name, "amount": 0}
+        if current_user:
+            contrib["user_id"] = current_user.id
+        elif guest_session:
+            contrib["guest_session_id"] = guest_session.id
+        existing_contributors.append(contrib)
         item.contributors = existing_contributors
     else:
         if not item.price:
@@ -431,7 +538,12 @@ async def reserve_item(
             raise HTTPException(status_code=400, detail=f"Сумма превышает оставшуюся. Макс: {float(remaining)}")
 
         item.collected_amount = new_collected
-        existing_contributors.append({"name": reserver_name, "amount": float(amount_decimal)})
+        contrib = {"name": reserver_name, "amount": float(amount_decimal)}
+        if current_user:
+            contrib["user_id"] = current_user.id
+        elif guest_session:
+            contrib["guest_session_id"] = guest_session.id
+        existing_contributors.append(contrib)
         item.contributors = existing_contributors
         all_names = list(dict.fromkeys(c["name"] for c in existing_contributors))
         item.reserved_by_name = ", ".join(all_names)
@@ -489,17 +601,20 @@ async def reserve_item(
     if current_user:
         await _notify_wishlist_viewers(db, wishlist, current_user, "item_reserved", extra)
 
+    if guest_token_for_response:
+        response.headers["X-Guest-Session-Token"] = guest_token_for_response
     return item
 
 
 @router.delete("/{item_id}/reserve", response_model=Item)
 async def unreserve_item(
     item_id: int,
+    request: Request,
     name: Optional[str] = Query(None, description="Name of contributor to remove (for partial unreserve)"),
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """Unreserve an item. If name is provided — remove only that contributor."""
+    """Unreserve an item. Auth users: by token. Anonymous: requires X-Guest-Session-Token header."""
     result = await db.execute(
         select(ItemModel)
         .where(ItemModel.id == item_id)
@@ -515,43 +630,68 @@ async def unreserve_item(
         raise HTTPException(status_code=404, detail="Wishlist not found")
 
     existing_contributors = list(item.contributors or [])
-
     remove_name = None
+    guest_session = None
+
     if current_user:
         remove_name = current_user.full_name or current_user.username
-    elif name:
-        remove_name = name.strip()
+    else:
+        session_token = request.headers.get("X-Guest-Session-Token") or request.cookies.get("guest_session_token")
+        if not session_token:
+            raise HTTPException(status_code=401, detail="Для отмены брони укажите X-Guest-Session-Token (получен при бронировании)")
+        gs_result = await db.execute(
+            select(GuestSession).where(
+                and_(
+                    GuestSession.session_token == session_token,
+                    GuestSession.expires_at > datetime.utcnow()
+                )
+            )
+        )
+        guest_session = gs_result.scalar_one_or_none()
+        if not guest_session:
+            raise HTTPException(status_code=401, detail="Сессия истекла. Войдите снова.")
+        remove_name = guest_session.display_name
 
-    if remove_name and len(existing_contributors) > 1:
-        remaining = []
-        removed_amount = 0.0
-        for c in existing_contributors:
-            if c["name"] == remove_name and removed_amount == 0:
-                removed_amount = float(c.get("amount", 0))
-            else:
-                remaining.append(c)
+    def _contributor_matches(contrib):
+        """Match by user_id (auth) or guest_session_id (guest). Name only for legacy auth data."""
+        contrib = contrib if isinstance(contrib, dict) else {}
+        if current_user:
+            if contrib.get("user_id") == current_user.id:
+                return True
+            if not contrib.get("user_id") and not contrib.get("guest_session_id") and remove_name:
+                if (contrib.get("name") or "").strip().lower() == (remove_name or "").strip().lower():
+                    return True
+        if guest_session:
+            if contrib.get("guest_session_id") == guest_session.id:
+                return True
+        return False
 
-        if removed_amount == 0 and not remaining:
-            remaining = []
+    remaining = [c for c in existing_contributors if not _contributor_matches(c)]
 
-        if remaining:
-            item.contributors = remaining
-            new_collected = Decimal(sum(Decimal(str(c.get("amount", 0))) for c in remaining))
-            item.collected_amount = new_collected
-            all_names = list(dict.fromkeys(c["name"] for c in remaining))
-            item.reserved_by_name = ", ".join(all_names)
-            item.is_reserved = bool(item.price and new_collected >= Decimal(str(item.price)))
-        else:
-            item.is_reserved = False
-            item.reserved_by_id = None
-            item.reserved_by_name = None
-            item.collected_amount = 0
-            item.contributors = []
+    if len(remaining) == len(existing_contributors):
+        raise HTTPException(
+            status_code=400,
+            detail="Не удалось найти вашу бронь."
+        )
+
+    if remaining:
+        item.contributors = remaining
+        new_collected = sum(
+            Decimal(str(contrib.get("amount", 0) if isinstance(contrib, dict) else 0))
+            for contrib in remaining
+        )
+        item.collected_amount = new_collected
+        all_names = list(dict.fromkeys(
+            (contrib.get("name", "") or "") for contrib in remaining
+            if isinstance(contrib, dict)
+        ))
+        item.reserved_by_name = ", ".join(n for n in all_names if n) or None
+        item.is_reserved = bool(item.price and new_collected >= Decimal(str(item.price)))
     else:
         item.is_reserved = False
         item.reserved_by_id = None
         item.reserved_by_name = None
-        item.collected_amount = 0
+        item.collected_amount = Decimal(0)
         item.contributors = []
 
     if current_user:
@@ -560,6 +700,20 @@ async def unreserve_item(
                 and_(
                     Reservation.item_id == item_id,
                     Reservation.user_id == current_user.id,
+                    Reservation.status == ReservationStatusEnum.ACTIVE
+                )
+            )
+        )
+        reservation = reservation_result.scalar_one_or_none()
+        if reservation:
+            reservation.status = ReservationStatusEnum.CANCELLED
+            reservation.cancelled_at = func.now()
+    elif guest_session:
+        reservation_result = await db.execute(
+            select(Reservation).where(
+                and_(
+                    Reservation.item_id == item_id,
+                    Reservation.guest_session_id == guest_session.id,
                     Reservation.status == ReservationStatusEnum.ACTIVE
                 )
             )
@@ -584,16 +738,41 @@ async def unreserve_item(
 async def get_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
-    """Get a specific item"""
+    """Get a specific item. Requires access to the wishlist (owner or friend)."""
     result = await db.execute(
-        select(ItemModel).where(ItemModel.id == item_id)
+        select(ItemModel)
+        .options(joinedload(ItemModel.wishlist))
+        .where(ItemModel.id == item_id)
     )
-    item = result.scalar_one_or_none()
+    item = result.unique().scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    return item
+    wishlist = item.wishlist
+    if not wishlist:
+        raise HTTPException(status_code=404, detail="Wishlist not found")
+    if wishlist.owner_id != current_user.id:
+        friendship_result = await db.execute(
+            select(FriendshipModel).where(
+                and_(
+                    or_(
+                        and_(FriendshipModel.user_id == current_user.id, FriendshipModel.friend_id == wishlist.owner_id),
+                        and_(FriendshipModel.user_id == wishlist.owner_id, FriendshipModel.friend_id == current_user.id)
+                    ),
+                    FriendshipModel.status == FriendshipStatusEnum.ACCEPTED
+                )
+            )
+        )
+        if not friendship_result.scalar_one_or_none():
+            raise HTTPException(status_code=403, detail="Access denied")
+    response_item = Item.model_validate(item)
+    if wishlist.owner_id == current_user.id:
+        response_item.is_reserved = False
+        response_item.reserved_by_name = None
+        response_item.collected_amount = 0
+        response_item.contributors = []
+    return response_item
 
 
 @router.patch("/{item_id}", response_model=Item)
@@ -601,7 +780,7 @@ async def update_item(
     item_id: int,
     item_data: ItemUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Update an item"""
     result = await db.execute(
@@ -633,7 +812,7 @@ async def update_item(
 async def delete_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Delete an item"""
     result = await db.execute(
@@ -694,6 +873,8 @@ async def _notify_wishlist_viewers(
     extra: dict = None,
 ):
     """Send WebSocket notification to friends (excluding owner for reservation actions)"""
+    import logging
+    logging.getLogger(__name__).info("WS notify: action=%s wishlist_id=%s owner=%s", action, wishlist.id, wishlist.owner_id)
     result = await db.execute(
         select(FriendshipModel).where(
             and_(
@@ -725,10 +906,8 @@ async def _notify_wishlist_viewers(
             await manager.send_personal_message(message, str(friend_id))
             notified.add(friend_id)
 
-    # For non-reservation actions, also notify owner
-    if action not in ("item_reserved", "item_unreserved"):
-        if wishlist.owner_id not in notified:
-            await manager.send_personal_message(message, str(wishlist.owner_id))
+    if wishlist.owner_id not in notified:
+        await manager.send_personal_message(message, str(wishlist.owner_id))
 
     if current_user.id not in notified and current_user.id != wishlist.owner_id:
         await manager.send_personal_message(message, str(current_user.id))
@@ -739,7 +918,7 @@ async def _notify_wishlist_viewers(
 @router.post("/parse-url", response_model=ParsedProductData)
 async def parse_product_url(
     request: ParseProductRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Parse product data from a URL"""
     try:

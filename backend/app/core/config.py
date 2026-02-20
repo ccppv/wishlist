@@ -45,10 +45,15 @@ class Settings(BaseSettings):
     @field_validator("SECRET_KEY", mode="after")
     @classmethod
     def validate_secret_key(cls, v: str) -> str:
-        if v == "your-secret-key-change-in-production":
+        forbidden = (
+            "your-secret-key-change-in-production",
+            "your-secret-key-change-in-production-min-32-chars",
+            "change-in-production",
+        )
+        if any(p in v for p in forbidden) or v.startswith("your-secret-key"):
             raise ValueError(
                 "SECRET_KEY must be set in environment variables. "
-                "Default value is not allowed in production."
+                "Placeholder values are not allowed."
             )
         if len(v) < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters long")
@@ -102,7 +107,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,
-        extra="ignore"
+        extra="ignore",
     )
 
 

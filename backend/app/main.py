@@ -3,6 +3,8 @@ Main FastAPI application
 """
 import logging
 from contextlib import asynccontextmanager
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
 from pathlib import Path
 
 from fastapi import FastAPI

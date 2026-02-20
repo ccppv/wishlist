@@ -9,7 +9,7 @@ import bcrypt
 from app.core.config import settings
 
 
-def create_access_token(subject: str | Any, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(subject: Any, expires_delta: Optional[timedelta] = None) -> str:
     """Create JWT access token"""
     now = datetime.now(timezone.utc)
     if expires_delta:

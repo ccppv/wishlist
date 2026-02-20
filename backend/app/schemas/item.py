@@ -1,11 +1,13 @@
 """
 Item schemas
 """
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, PlainSerializer
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Annotated
 from decimal import Decimal
 from app.models.item import PriorityEnum
+
+DecimalAsNum = Annotated[Decimal, PlainSerializer(lambda x: float(x) if x is not None else None)]
 
 
 class ItemBase(BaseModel):
@@ -15,9 +17,9 @@ class ItemBase(BaseModel):
     url: Optional[str] = Field(None, max_length=1000)
     image_url: Optional[str] = Field(None, max_length=500)  # Legacy, deprecated
     images: Optional[List[str]] = Field(default_factory=list)  # New: array of image URLs
-    price: Optional[Decimal] = None
+    price: Optional[DecimalAsNum] = None
     currency: str = Field(default="₽", max_length=10)
-    target_amount: Optional[Decimal] = None
+    target_amount: Optional[DecimalAsNum] = None
     priority: PriorityEnum = PriorityEnum.MEDIUM
 
 
@@ -50,7 +52,7 @@ class ItemInDB(ItemBase):
     """Item in database schema"""
     id: int
     wishlist_id: int
-    collected_amount: Decimal
+    collected_amount: DecimalAsNum
     is_reserved: bool
     is_purchased: bool
     reserved_by_name: Optional[str] = None
@@ -80,7 +82,7 @@ class ItemOwnerView(ItemBase):
     """Item response for wishlist owner - hides reservation info"""
     id: int
     wishlist_id: int
-    collected_amount: Decimal = Decimal(0)
+    collected_amount: DecimalAsNum = Field(default=Decimal(0))
     is_reserved: bool = False
     is_purchased: bool
     reserved_by_name: Optional[str] = None  # Always None for owner
@@ -119,7 +121,7 @@ class ReservedItemDetail(ItemBase):
     """Extended item info for my-reservations endpoint"""
     id: int
     wishlist_id: int
-    collected_amount: Decimal
+    collected_amount: DecimalAsNum
     is_reserved: bool
     is_purchased: bool
     reserved_by_name: Optional[str] = None

@@ -13,7 +13,7 @@ import app.models  # noqa
 # Create async engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=True,
+    echo=False,
     future=True,
     poolclass=NullPool,
 )

@@ -1,6 +1,8 @@
 """
 Users endpoints
 """
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status, Form, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -18,6 +20,7 @@ from app.models.wishlist import Wishlist as WishlistModel, VisibilityEnum
 from app.models.friendship import Friendship as FriendshipModel, FriendshipStatusEnum
 from app.api.dependencies import get_current_active_user, get_current_user_optional
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -41,9 +44,15 @@ async def update_current_user(
     """
     Update current user profile
     """
+    logger.info("[PATCH /users/me] user_id=%d username=%s | full_name received=%r | avatar received=%s (filename=%r content_type=%r)",
+                current_user.id, current_user.username, full_name,
+                avatar is not None, avatar.filename if avatar else None, avatar.content_type if avatar else None)
+
     if full_name is not None:
+        old_name = current_user.full_name
         current_user.full_name = full_name
-    
+        logger.info("[PATCH /users/me] full_name updated: %r -> %r", old_name, full_name)
+
     # Handle avatar upload
     if avatar:
         # Validate file type
@@ -80,13 +89,38 @@ async def update_current_user(
         # Write the already-read contents
         with file_path.open("wb") as buffer:
             buffer.write(contents)
-        
+
+        old_avatar = current_user.avatar_url
         current_user.avatar_url = f"/uploads/avatars/{filename}"
-    
+        logger.info("[PATCH /users/me] avatar updated: %r -> %r | file_size=%d bytes", old_avatar, current_user.avatar_url, len(contents))
+
     await db.commit()
-    await db.refresh(current_user)
-    
-    return current_user
+    result = await db.execute(select(UserModel).where(UserModel.id == current_user.id))
+    updated_user = result.scalar_one()
+    logger.info("[PATCH /users/me] OK user_id=%d full_name=%r avatar_url=%r", updated_user.id, updated_user.full_name, updated_user.avatar_url)
+    return updated_user
+
+
+@router.patch("/me/json", response_model=User)
+async def update_current_user_json(
+    user_update: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user),
+) -> User:
+    """Update user profile via JSON (for full_name only)"""
+    logger.info("[PATCH /users/me/json] user_id=%d username=%s | body=%r",
+                current_user.id, current_user.username, user_update.model_dump(exclude_none=True))
+
+    if user_update.full_name is not None:
+        old_name = current_user.full_name
+        current_user.full_name = user_update.full_name
+        logger.info("[PATCH /users/me/json] full_name updated: %r -> %r", old_name, user_update.full_name)
+
+    await db.commit()
+    result = await db.execute(select(UserModel).where(UserModel.id == current_user.id))
+    updated_user = result.scalar_one()
+    logger.info("[PATCH /users/me/json] OK user_id=%d full_name=%r", updated_user.id, updated_user.full_name)
+    return updated_user
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

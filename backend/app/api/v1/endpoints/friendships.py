@@ -1,6 +1,7 @@
 """
 Friendship endpoints
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, and_
@@ -65,6 +66,34 @@ async def send_friend_request(
     )
     existing = result.scalar_one_or_none()
     if existing:
+        status_val = getattr(existing.status, "value", str(existing.status))
+        status_pending = status_val == "pending"
+        other_sent = existing.requester_id != current_user.id
+        logging.info(
+            "[Friendships] existing: status=%s requester=%d current=%d -> accept=%s",
+            status_val, existing.requester_id, current_user.id, status_pending and other_sent
+        )
+        if status_pending and other_sent:
+            existing.status = FriendshipStatusEnum.ACCEPTED
+            existing.accepted_at = datetime.now()
+            await db.commit()
+            await db.refresh(existing)
+            websocket_message = json.dumps({
+                "type": "friend_request",
+                "action": "updated",
+                "status": "accepted",
+                "from_user_id": current_user.id,
+                "from_username": current_user.username,
+                "friendship_id": existing.id
+            })
+            await manager.send_personal_message(websocket_message, str(friendship_data.friend_id))
+            return FriendshipWithUser(
+                id=existing.id,
+                status=existing.status,
+                friend=UserPublic.model_validate(friend),
+                requested_at=existing.requested_at,
+                accepted_at=existing.accepted_at
+            )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Friendship request already exists"

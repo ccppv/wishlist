@@ -1,12 +1,14 @@
 """
 WebSocket endpoints - supports both user IDs and share_token channels
 """
+import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, status
 from typing import Dict, List, Optional
 from jose import JWTError, jwt
 from app.core.config import settings
 import json
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -34,11 +36,13 @@ class ConnectionManager:
     async def send_personal_message(self, message: str, client_id: str):
         """Send message to specific client, cleaning up dead connections"""
         if client_id not in self.active_connections:
+            logger.info("WS: no connection for client_id=%s (active: %s)", client_id, list(self.active_connections.keys()))
             return
         dead = []
         for conn in self.active_connections[client_id]:
             try:
                 await conn.send_text(message)
+                logger.info("WS: sent to client_id=%s", client_id)
             except Exception:
                 dead.append(conn)
         for conn in dead:

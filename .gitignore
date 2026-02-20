@@ -64,6 +64,20 @@ backend/uploads/
 # Cursor
 .cursor/
 
+# Xcode / iOS
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
 # Archives / artifacts
 *.tar.gz
 *.zip
@@ -81,3 +95,4 @@ backend/test_parsers_local.py
 # Документация .md (кроме контента страниц terms/privacy)
 *.md
 !frontend/content/*.md
+!wishliste/wishliste/Resources/*.md

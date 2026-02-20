@@ -18,7 +18,7 @@ from app.schemas.wishlist import WishlistCreate, Wishlist, WishlistUpdate, Wishl
 from app.models.wishlist import Wishlist as WishlistModel, WishlistTypeEnum, VisibilityEnum
 from app.models.user import User as UserModel
 from app.models.friendship import Friendship as FriendshipModel, FriendshipStatusEnum
-from app.api.dependencies import get_current_active_user
+from app.api.dependencies import get_current_active_user, get_current_user_optional
 from app.api.v1.endpoints.websocket import manager
 
 router = APIRouter()
@@ -136,8 +136,10 @@ async def create_wishlist(
     for friendship in friendships:
         friend_id = friendship.friend_id if friendship.user_id == current_user.id else friendship.user_id
         await manager.send_personal_message(websocket_message, str(friend_id))
-    
-    return wishlist
+
+    s = WishlistSummary.model_validate(wishlist)
+    s.items_count = 0
+    return s
 
 
 @router.get("/", response_model=List[WishlistSummary])
@@ -197,17 +199,32 @@ async def get_wishlist(
             detail="Wishlist not found"
         )
     
-    # Check access rights
     if wishlist.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
+        user_id_min = min(current_user.id, wishlist.owner_id)
+        user_id_max = max(current_user.id, wishlist.owner_id)
+        result = await db.execute(
+            select(FriendshipModel).where(
+                and_(
+                    FriendshipModel.user_id == user_id_min,
+                    FriendshipModel.friend_id == user_id_max,
+                    FriendshipModel.status == FriendshipStatusEnum.ACCEPTED
+                )
+            )
         )
+        is_friend = result.scalar_one_or_none() is not None
+        if not is_friend:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
+        if wishlist.visibility not in (VisibilityEnum.PUBLIC, VisibilityEnum.FRIENDS_ONLY):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions"
+            )
     
-    # CRITICAL: Convert to Pydantic FIRST, then hide reservation info
-    # NEVER mutate ORM objects — session.commit() would persist zeroed values to DB
     response = Wishlist.model_validate(wishlist)
-    if response.items:
+    if wishlist.owner_id == current_user.id and response.items:
         for item in response.items:
             item.is_reserved = False
             item.reserved_by_name = None
@@ -221,9 +238,10 @@ async def get_wishlist(
 async def get_wishlist_by_token(
     share_token: str,
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[UserModel] = Depends(get_current_user_optional),
 ) -> Wishlist:
     """
-    Get wishlist by share token (for guests and friends)
+    Get wishlist by share token. If requester is owner — hides who reserved/contributed.
     """
     result = await db.execute(
         select(WishlistModel)
@@ -244,7 +262,14 @@ async def get_wishlist_by_token(
             detail="This wishlist is archived"
         )
     
-    return wishlist
+    response = Wishlist.model_validate(wishlist)
+    if current_user and wishlist.owner_id == current_user.id:
+        for item in (response.items or []):
+            item.is_reserved = False
+            item.reserved_by_name = None
+            item.collected_amount = 0
+            item.contributors = []
+    return response
 
 
 @router.delete("/{wishlist_id}", status_code=status.HTTP_204_NO_CONTENT)

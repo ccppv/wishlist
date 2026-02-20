@@ -1,16 +1,19 @@
 """
 Authentication endpoints
 """
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Body, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional
+from datetime import datetime, timedelta
+import secrets
 import shutil
 from pathlib import Path
 import uuid
 
 from app.db.session import get_db
+from app.models.guest_session import GuestSession
 from app.schemas.user import (
     TokenWithUser, UserCreate, User, OnboardingComplete,
     RegisterResponse, VerifyEmailRequest, ResendCodeRequest,
@@ -166,6 +169,16 @@ async def resend_code(
     )
 
 
+@router.post("/forgot-password")
+async def forgot_password(email: str = Body(..., embed=True)):
+    """Placeholder for password reset. Returns 501 until implemented."""
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        status_code=501,
+        content={"detail": "Восстановление пароля пока в разработке."},
+    )
+
+
 @router.post("/login", response_model=TokenWithUser)
 async def login(
     db: AsyncSession = Depends(get_db),
@@ -233,46 +246,62 @@ async def get_me(
     return current_user
 
 
+
+@router.post("/guest-session")
+async def create_guest_session(
+    request: Request,
+    body: dict = Body(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Create guest session for anonymous use. Display name required.
+    Session expires in 90 days.
+    """
+    display_name = (body.get("display_name") or "").strip()
+    if not display_name or len(display_name) < 2:
+        raise HTTPException(status_code=400, detail="Укажите имя (минимум 2 символа)")
+
+    session_token = secrets.token_urlsafe(32)
+    guest_session = GuestSession(
+        session_token=session_token,
+        display_name=display_name,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+        expires_at=datetime.utcnow() + timedelta(days=90),
+    )
+    db.add(guest_session)
+    await db.commit()
+    await db.refresh(guest_session)
+    return {"token": session_token, "display_name": display_name, "expires_in_days": 90}
+
 @router.post("/onboarding", response_model=User)
 async def complete_onboarding(
-    full_name: str = Form(...),
+    full_name: str = Form(default=""),
     avatar: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ) -> User:
     """
-    Complete user onboarding with avatar upload
+    Complete user onboarding. Idempotent: if already completed, returns 200 with user.
     """
     if current_user.onboarding_completed:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Onboarding already completed"
-        )
-    
-    # Update full name
-    current_user.full_name = full_name
-    
-    # Handle avatar upload
-    if avatar:
-        # Create uploads directory if not exists
+        await db.refresh(current_user)
+        return current_user
+
+    if full_name.strip():
+        current_user.full_name = full_name.strip()
+
+    if avatar and avatar.filename:
         uploads_dir = Path("uploads/avatars")
         uploads_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Generate unique filename
-        file_extension = Path(avatar.filename).suffix
-        filename = f"{uuid.uuid4()}{file_extension}"
+        ext = Path(avatar.filename).suffix or ".jpg"
+        filename = f"{uuid.uuid4()}{ext}"
         file_path = uploads_dir / filename
-        
-        # Save file
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(avatar.file, buffer)
-        
-        # Store relative path in database
         current_user.avatar_url = f"/uploads/avatars/{filename}"
-    
+
     current_user.onboarding_completed = True
-    
     await db.commit()
     await db.refresh(current_user)
-    
     return current_user
