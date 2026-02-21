@@ -35,7 +35,8 @@ struct WishlistsAPI {
     }
 
     func getByShareToken(_ token: String) async throws -> Wishlist {
-        try await client.request("/wishlists/share/\(token)")
+        guard let safe = URLValidation.safeShareToken(token) else { throw APIError.server(400, "Недопустимый токен") }
+        return try await client.request("/wishlists/share/\(safe)")
     }
 
     func update(id: Int, update: WishlistUpdate) async throws -> WishlistSummary {

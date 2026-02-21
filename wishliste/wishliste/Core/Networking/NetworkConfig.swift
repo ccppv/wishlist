@@ -14,8 +14,7 @@ enum NetworkConfig {
     }
 
     static var baseURL: URL {
-        if let url = URL(string: baseURLString) { return url }
-        return URL(string: "http://192.168.1.1:8000") ?? URL(string: "http://127.0.0.1:8000")!
+        URL(string: baseURLString) ?? URL(string: "https://api.x1k.ru")!
     }
 
     static var apiBaseURL: String {

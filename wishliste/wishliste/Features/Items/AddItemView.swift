@@ -184,7 +184,11 @@ struct AddItemView: View {
                     do {
                         let u = try await api.uploadImage(data: data, filename: filename)
                         await MainActor.run { uploaded.append(u) }
-                    } catch { }
+                    } catch {
+                        #if DEBUG
+                        print("[AddItemView] uploadImage error: \(error)")
+                        #endif
+                    }
                 }
             }
             await MainActor.run {

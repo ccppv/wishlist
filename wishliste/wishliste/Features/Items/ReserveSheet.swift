@@ -79,7 +79,7 @@ struct ReserveSheet: View {
                             }
                         }
 
-                    Text("Доступно: \(String(describing: maxAvailable)) \(item.currency ?? "")")
+                    Text("Доступно: \(String(describing: maxAvailable)) \(item.currency)")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 }

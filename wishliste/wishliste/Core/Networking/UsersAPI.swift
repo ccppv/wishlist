@@ -12,7 +12,6 @@ struct UsersAPI {
         if let n = fullName { fields["full_name"] = n }
         if let data = avatarData, let name = avatarFilename, !name.isEmpty {
             #if DEBUG
-            #if DEBUG
             print("[UsersAPI] updateMe: PATCH /users/me multipart full_name=\(fullName ?? "nil") avatar=\(data.count) bytes")
             #endif
             return try await client.request(
@@ -24,14 +23,12 @@ struct UsersAPI {
         }
         if let n = fullName {
             #if DEBUG
-            #if DEBUG
             print("[UsersAPI] updateMe: PATCH /users/me/json full_name='\(n)'")
             #endif
             struct UpdateBody: Encodable { let fullName: String; enum CodingKeys: String, CodingKey { case fullName = "full_name" } }
             return try await client.request("/users/me/json", method: "PATCH", body: UpdateBody(fullName: n))
         }
         #if DEBUG
-            #if DEBUG
             print("[UsersAPI] updateMe: no changes, calling me()")
             #endif
         return try await me()
@@ -46,10 +43,12 @@ struct UsersAPI {
     }
 
     func getByUsername(_ username: String) async throws -> User {
-        try await client.request("/users/\(username)")
+        guard let safe = URLValidation.safeUsername(username) else { throw APIError.server(400, "Недопустимое имя пользователя") }
+        return try await client.request("/users/\(safe)")
     }
 
     func wishlists(username: String) async throws -> [WishlistSummary] {
-        try await client.request("/users/\(username)/wishlists")
+        guard let safe = URLValidation.safeUsername(username) else { throw APIError.server(400, "Недопустимое имя пользователя") }
+        return try await client.request("/users/\(safe)/wishlists")
     }
 }

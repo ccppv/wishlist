@@ -63,8 +63,8 @@ struct ProfileQRSheet: View {
     }
 
     private func generateQR() {
-        let data = profileUrl.absoluteString.data(using: .utf8)
-        guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return }
+        guard let data = profileUrl.absoluteString.data(using: .utf8),
+              let filter = CIFilter(name: "CIQRCodeGenerator") else { return }
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("H", forKey: "inputCorrectionLevel")
         guard let output = filter.outputImage else { return }

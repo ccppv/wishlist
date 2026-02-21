@@ -134,7 +134,11 @@ struct ProfileView: View {
                 user = try await usersAPI.me()
             } catch APIError.unauthorized {
                 authStore.logout()
-            } catch { }
+            } catch {
+                #if DEBUG
+                print("[ProfileView] load error: \(error)")
+                #endif
+            }
             isLoading = false
         }
     }
@@ -211,7 +215,11 @@ struct NotificationsSheet: View {
                 requests = reqs
                 store.friendRequests = reqs.map { FriendRequestNotification(id: $0.id, fromUsername: $0.friend.username, friendshipId: $0.id) }
             }
-        } catch {}
+        } catch {
+            #if DEBUG
+            print("[NotificationsSheet] loadRequests error: \(error)")
+            #endif
+        }
     }
 
     private func accept(_ f: Friendship) {

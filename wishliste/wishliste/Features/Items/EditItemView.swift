@@ -183,7 +183,11 @@ struct EditItemView: View {
                     do {
                         let u = try await api.uploadImage(data: data, filename: filename)
                         await MainActor.run { imageUrls.append(u) }
-                    } catch { }
+                    } catch {
+                        #if DEBUG
+                        print("[EditItemView] uploadImage error: \(error)")
+                        #endif
+                    }
                 }
             }
             await MainActor.run { selectedItems = []; showPhotoPicker = false }

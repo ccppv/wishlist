@@ -94,15 +94,11 @@ struct EditProfileView: View {
                 let filename = jpegData != nil ? "avatar_\(UUID().uuidString.prefix(8)).jpg" : nil
 
                 #if DEBUG
-                print("[EditProfile] save: fullName=\(nameToSend.isEmpty ? "(empty)" : "'\(nameToSend)'") avatarData=\(avatarData != nil ? "\(avatarData!.count) bytes" : "nil") jpegData=\(jpegData != nil ? "\(jpegData!.count) bytes" : "nil") filename=\(filename ?? "nil")")
+                print("[EditProfile] save: nameLen=\(nameToSend.count) avatarBytes=\(avatarData?.count ?? 0) jpegBytes=\(jpegData?.count ?? 0)")
                 #endif
                 #if DEBUG
                 if jpegData != nil { print("[EditProfile] -> PATCH /users/me (multipart)") }
-                #endif
-                #if DEBUG
                 else if !nameToSend.isEmpty { print("[EditProfile] -> PATCH /users/me/json") }
-                #endif
-                #if DEBUG
                 else { print("[EditProfile] -> no changes, skip") }
                 #endif
 
@@ -113,7 +109,7 @@ struct EditProfileView: View {
                 )
 
                 #if DEBUG
-                print("[EditProfile] OK: full_name=\(updatedUser.fullName ?? "nil") avatar_url=\(updatedUser.avatarUrl ?? "nil")")
+                print("[EditProfile] OK")
                 #endif
 
                 await MainActor.run {

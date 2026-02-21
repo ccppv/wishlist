@@ -4,9 +4,6 @@ import Combine
 final class AuthStore: ObservableObject {
     static let shared = AuthStore()
 
-    private let defaults = UserDefaults.standard
-    private let tokenKey = "wishlist_jwt_token"
-
     @Published private(set) var token: String?
     @Published private(set) var user: User?
 
@@ -24,19 +21,33 @@ final class AuthStore: ObservableObject {
 
     private var guestCancellable: AnyCancellable?
 
+    var refreshToken: String? { KeychainService.load(for: .jwtRefreshToken) }
+
     private init() {
-        let t = defaults.string(forKey: tokenKey)
-        token = (t != nil && !t!.isEmpty) ? t : nil
+        if let kc = KeychainService.load(for: .jwtToken), !kc.isEmpty {
+            token = kc
+        } else if let ud = UserDefaults.standard.string(forKey: "wishlist_jwt_token"), !ud.isEmpty {
+            token = ud
+            _ = KeychainService.save(ud, for: .jwtToken)
+            UserDefaults.standard.removeObject(forKey: "wishlist_jwt_token")
+        } else {
+            token = nil
+        }
         user = nil
         guestCancellable = GuestSessionStore.shared.objectWillChange
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.objectWillChange.send() }
     }
 
-    func setAuth(accessToken: String, user: User) {
+    func setAuth(accessToken: String, refreshToken: String? = nil, user: User) {
         token = accessToken
         self.user = user
-        defaults.set(accessToken, forKey: tokenKey)
+        _ = KeychainService.save(accessToken, for: .jwtToken)
+        if let rt = refreshToken {
+            _ = KeychainService.save(rt, for: .jwtRefreshToken)
+        } else {
+            _ = KeychainService.delete(.jwtRefreshToken)
+        }
     }
 
     func setUser(_ u: User) {
@@ -46,7 +57,8 @@ final class AuthStore: ObservableObject {
     func logout() {
         token = nil
         user = nil
-        defaults.removeObject(forKey: tokenKey)
+        _ = KeychainService.delete(.jwtToken)
+        _ = KeychainService.delete(.jwtRefreshToken)
     }
 
     func logoutGuest() {

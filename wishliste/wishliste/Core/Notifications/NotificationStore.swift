@@ -70,7 +70,11 @@ final class NotificationStore: WebSocketDelegate {
                 await MainActor.run {
                     friendRequests = reqs.map { FriendRequestNotification(id: $0.id, fromUsername: $0.friend.username, friendshipId: $0.id) }
                 }
-            } catch {}
+            } catch {
+                #if DEBUG
+                print("[NotificationStore] loadFromAPI failed: \(error)")
+                #endif
+            }
         }
     }
 }

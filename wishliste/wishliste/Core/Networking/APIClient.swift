@@ -24,6 +24,7 @@ final class APIClient {
     private let baseURL: String
     private let session: URLSession
     private var tokenProvider: (() -> String?)?
+    private var refreshHandler: (() async -> Bool)?
 
     private init(baseURL: String? = nil) {
         self.baseURL = baseURL ?? NetworkConfig.apiBaseURL
@@ -32,6 +33,10 @@ final class APIClient {
 
     func setTokenProvider(_ provider: @escaping () -> String?) {
         tokenProvider = provider
+    }
+
+    func setRefreshHandler(_ handler: (() async -> Bool)?) {
+        refreshHandler = handler
     }
 
     func request<T: Decodable>(
@@ -85,20 +90,24 @@ final class APIClient {
         let bodyLen = request.httpBody?.count ?? 0
         if bodyLen > 0 {
             #if DEBUG
-            print("[API] \(method) \(urlString) | Auth: \(hasAuth) | body: \(bodyLen) bytes")
+            print("[API] \(method) \(path) | body: \(bodyLen) bytes")
             #endif
         } else {
             #if DEBUG
-            print("[API] \(method) \(urlString) | Auth: \(hasAuth)")
+            print("[API] \(method) \(path)")
             #endif
         }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError.noData }
         #if DEBUG
-        print("[API] \(method) \(urlString) | Status: \(http.statusCode)")
+        print("[API] \(method) \(path) | Status: \(http.statusCode)")
         #endif
 
         if http.statusCode == 401 {
+            let canRetry = path.contains("/auth/refresh") == false && path.contains("/auth/login") == false && path.contains("/auth/verify-email") == false && path.contains("/auth/register") == false
+            if canRetry, let handler = refreshHandler, await handler() {
+                return try await request(endpoint, method: method, body: body, query: query, formFields: formFields, formFile: formFile, useMultipart: useMultipart, extraHeaders: extraHeaders)
+            }
             throw APIError.unauthorized
         }
         if http.statusCode >= 400 {
@@ -107,7 +116,8 @@ final class APIClient {
         }
 
         if T.self == EmptyResponse.self {
-            return EmptyResponse() as! T
+            guard let r = EmptyResponse() as? T else { throw APIError.decoding(NSError(domain: "API", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response type"])) }
+            return r
         }
         if let preview = String(data: data.prefix(100), encoding: .utf8), preview.trimmingCharacters(in: .whitespaces).hasPrefix("<") {
             throw APIError.server(200, "Сервер вернул HTML вместо JSON. Проверьте API_BASE_URL — должен указывать на backend API.")
@@ -133,64 +143,25 @@ final class APIClient {
         }
         do {
             let result = try decoder.decode(T.self, from: data)
-            if T.self == User.self, let user = result as? User {
-                #if DEBUG
-                print("[API] User decoded: full_name=\(user.fullName ?? "nil") avatar_url=\(user.avatarUrl ?? "nil")")
-                #endif
-                if user.fullName == nil || user.avatarUrl == nil, let raw = String(data: data, encoding: .utf8) {
-                    #if DEBUG
-                    print("[API] User raw response (full_name/avatar_url nil): \(String(raw.prefix(500)))")
-                    #endif
-                }
-            }
             return result
         } catch let decodingError as DecodingError {
-            if T.self == User.self, let raw = String(data: data, encoding: .utf8) {
-                #if DEBUG
-                print("[API] User decode failed. Raw: \(String(raw.prefix(800)))")
-                #endif
-            }
-            if let raw = String(data: data, encoding: .utf8) {
-                #if DEBUG
-                print("[API] Decode failed. Raw: \(String(raw.prefix(500)))")
-                #endif
-            }
-            switch decodingError {
-            case .keyNotFound(let key, let c):
-                #if DEBUG
-                print("[API] Key missing: \(key.stringValue) path: \(c.codingPath)")
-                #endif
-            case .typeMismatch(let type, let c):
-                #if DEBUG
-                print("[API] Type mismatch: \(type) path: \(c.codingPath)")
-                #endif
-            case .valueNotFound(let type, let c):
-                #if DEBUG
-                print("[API] Value not found: \(type) path: \(c.codingPath)")
-                #endif
-            case .dataCorrupted(let c):
-                #if DEBUG
-                print("[API] Data corrupted: \(c.debugDescription)")
-                #endif
-            @unknown default:
-                #if DEBUG
-                print("[API] Decode error: \(decodingError)")
-                #endif
-            }
+            _ = decodingError
             if T.self == TokenWithUser.self {
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let wrapped = json["data"] as? [String: Any],
                    wrapped["access_token"] != nil,
                    let wrappedData = try? JSONSerialization.data(withJSONObject: wrapped),
-                   let result = try? decoder.decode(TokenWithUser.self, from: wrappedData) {
-                    return result as! T
+                   let result = try? decoder.decode(TokenWithUser.self, from: wrappedData),
+                   let cast = result as? T {
+                    return cast
                 }
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                    json["access_token"] != nil {
                     let d = JSONDecoder()
                     d.keyDecodingStrategy = .convertFromSnakeCase
-                    if let result = try? d.decode(TokenWithUser.self, from: data) {
-                        return result as! T
+                    if let result = try? d.decode(TokenWithUser.self, from: data),
+                       let cast = result as? T {
+                        return cast
                     }
                 }
             }
@@ -232,7 +203,8 @@ final class APIClient {
             throw APIError.server(http.statusCode, message)
         }
         if T.self == EmptyResponse.self {
-            return (EmptyResponse() as! T, http)
+            guard let r = EmptyResponse() as? T else { throw APIError.decoding(NSError(domain: "API", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response type"])) }
+            return (r, http)
         }
         let decoder: JSONDecoder
         if T.self == [WishlistSummary].self || T.self == WishlistSummary.self || T.self == Wishlist.self || T.self == Item.self || T.self == [Item].self || T.self == User.self || T.self == [User].self || T.self == [Friendship].self || T.self == Friendship.self || T.self == [ReservedItemDetail].self {

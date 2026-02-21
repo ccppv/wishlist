@@ -282,7 +282,7 @@ struct ItemCardView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         ProgressView(value: progress)
                             .tint(.blue)
-                        Text("\(Int(progress * 100))% · \(String(describing: item.collectedAmount)) / \(String(describing: price)) \(item.currency ?? "")")
+                        Text("\(Int(progress * 100))% · \(String(describing: item.collectedAmount)) / \(String(describing: price)) \(item.currency)")
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                     }

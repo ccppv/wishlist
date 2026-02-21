@@ -16,7 +16,7 @@ final class AuthService {
     func verifyEmail(email: String, code: String) async throws -> TokenWithUser {
         let body = VerifyEmailRequest(email: email, code: code)
         let result: TokenWithUser = try await client.request("/auth/verify-email", method: "POST", body: body)
-        store.setAuth(accessToken: result.accessToken, user: result.user)
+        store.setAuth(accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user)
         _ = NotificationStore.shared
         WebSocketService.shared.connect(userId: result.user.id, token: result.accessToken)
         return result
@@ -30,10 +30,19 @@ final class AuthService {
     func login(username: String, password: String) async throws -> TokenWithUser {
         let form = LoginForm.formData(username: username, password: password)
         let result: TokenWithUser = try await client.request("/auth/login", method: "POST", formFields: form)
-        store.setAuth(accessToken: result.accessToken, user: result.user)
+        store.setAuth(accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user)
         _ = NotificationStore.shared
         WebSocketService.shared.connect(userId: result.user.id, token: result.accessToken)
         return result
+    }
+
+    func refreshToken() async throws -> Bool {
+        guard let rt = store.refreshToken, !rt.isEmpty else { return false }
+        struct RefreshRequest: Encodable { let refreshToken: String; enum CodingKeys: String, CodingKey { case refreshToken = "refresh_token" } }
+        let body = RefreshRequest(refreshToken: rt)
+        let res: TokenWithUser = try await client.request("/auth/refresh", method: "POST", body: body)
+        store.setAuth(accessToken: res.accessToken, refreshToken: res.refreshToken, user: res.user)
+        return true
     }
 
     func getMe() async throws -> User {
