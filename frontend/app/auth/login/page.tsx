@@ -53,12 +53,12 @@ function LoginContent() {
     setIsLoading(true)
 
     try {
-      const formDataObj = new FormData()
-      formDataObj.append('username', formData.username)
-      formDataObj.append('password', formData.password)
+      const params = new URLSearchParams()
+      params.append('username', formData.username)
+      params.append('password', formData.password)
 
-      const response = await apiClient.post('/auth/login', formDataObj, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const response = await apiClient.post('/auth/login', params, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       })
 
       const { access_token, user } = response.data
@@ -93,18 +93,18 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-100 dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-800 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Вход</h1>
-          <p className="text-gray-600 dark:text-neutral-400">Войдите в свой аккаунт</p>
+    <div className="min-h-screen bg-[var(--bg-cloud)] flex items-center justify-center p-6 sm:p-8">
+      <div className="w-full max-w-[400px] space-y-10">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">Вход</h1>
+          <p className="text-sm text-gray-500 dark:text-neutral-400">Войдите в свой аккаунт</p>
         </div>
 
         {/* Google Sign-In */}
         <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-700 border-2 border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-600 text-gray-700 dark:text-neutral-200 font-medium py-3 rounded-lg transition-colors mb-6"
-        >
+        onClick={handleGoogleLogin}
+        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-neutral-800/80 border border-gray-200 dark:border-neutral-600 hover:border-gray-300 dark:hover:border-neutral-500 text-gray-700 dark:text-neutral-200 font-medium py-3.5 rounded-xl transition-colors"
+      >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -114,24 +114,24 @@ function LoginContent() {
           Войти через Google
         </button>
 
-        <div className="relative mb-6">
+        <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-neutral-600"></div>
+            <div className="w-full border-t border-gray-200/80 dark:border-neutral-600/80"></div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-neutral-800 text-gray-500 dark:text-neutral-400">или</span>
+          <div className="relative flex justify-center text-xs">
+            <span className="px-3 bg-[var(--bg-cloud)] text-gray-400 dark:text-neutral-500">или</span>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50/80 dark:bg-red-900/20 border border-red-200/80 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-sm">
               {error}
             </div>
           )}
 
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
+          <div className="space-y-1.5">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-600 dark:text-neutral-400">
               Имя пользователя или Email
             </label>
             <input
@@ -140,27 +140,32 @@ function LoginContent() {
               required
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:text-white dark:bg-neutral-700"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800/50 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 outline-none transition text-gray-900 dark:text-white"
               placeholder="username или email"
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
-              Пароль
-            </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-600 dark:text-neutral-400">
+                Пароль
+              </label>
+              <Link href="/auth/forgot-password" className="text-xs text-primary-600 dark:text-primary-400 hover:underline">
+                Забыли пароль?
+              </Link>
+            </div>
             <input
               id="password"
               type="password"
               required
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition text-gray-900 dark:text-white dark:bg-neutral-700"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-neutral-600 rounded-xl bg-white dark:bg-neutral-800/50 focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 outline-none transition text-gray-900 dark:text-white"
               placeholder="••••••••"
             />
           </div>
 
-          <label className="flex items-start gap-2.5 cursor-pointer">
+          <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={agreed}
@@ -169,35 +174,33 @@ function LoginContent() {
             />
             <span className="text-xs text-gray-500 dark:text-neutral-400 leading-relaxed">
               Я принимаю{' '}
-              <a href="/terms" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">пользовательское соглашение</a>
+              <a href="/terms" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">соглашение</a>
               {' '}и{' '}
-              <a href="/privacy" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">политику конфиденциальности</a>
+              <a href="/privacy" target="_blank" className="text-primary-600 dark:text-primary-400 hover:underline">политику</a>
             </span>
           </label>
 
           <button
             type="submit"
             disabled={isLoading || !agreed}
-            className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 dark:disabled:bg-neutral-600 text-white font-semibold py-3 rounded-lg transition-colors"
+            className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3.5 rounded-xl transition-colors"
           >
             {isLoading ? 'Вход...' : 'Войти'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 dark:text-neutral-400">
-            Нет аккаунта?{' '}
-            <Link href="/auth/register" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">
-              Зарегистрироваться
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-4 text-center">
-          <Link href="/" className="text-sm text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
-            ← Вернуться на главную
+        <p className="text-center text-sm text-gray-500 dark:text-neutral-400">
+          Нет аккаунта?{' '}
+          <Link href="/auth/register" className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
+            Зарегистрироваться
           </Link>
-        </div>
+        </p>
+
+        <p className="text-center">
+          <Link href="/" className="text-xs text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-400">
+            ← На главную
+          </Link>
+        </p>
       </div>
     </div>
   )

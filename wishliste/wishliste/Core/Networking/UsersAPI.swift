@@ -11,7 +11,10 @@ struct UsersAPI {
         var fields: [String: String] = [:]
         if let n = fullName { fields["full_name"] = n }
         if let data = avatarData, let name = avatarFilename, !name.isEmpty {
+            #if DEBUG
+            #if DEBUG
             print("[UsersAPI] updateMe: PATCH /users/me multipart full_name=\(fullName ?? "nil") avatar=\(data.count) bytes")
+            #endif
             return try await client.request(
                 "/users/me",
                 method: "PATCH",
@@ -20,11 +23,17 @@ struct UsersAPI {
             )
         }
         if let n = fullName {
+            #if DEBUG
+            #if DEBUG
             print("[UsersAPI] updateMe: PATCH /users/me/json full_name='\(n)'")
+            #endif
             struct UpdateBody: Encodable { let fullName: String; enum CodingKeys: String, CodingKey { case fullName = "full_name" } }
             return try await client.request("/users/me/json", method: "PATCH", body: UpdateBody(fullName: n))
         }
-        print("[UsersAPI] updateMe: no changes, calling me()")
+        #if DEBUG
+            #if DEBUG
+            print("[UsersAPI] updateMe: no changes, calling me()")
+            #endif
         return try await me()
     }
 

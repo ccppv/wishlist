@@ -14,10 +14,8 @@ enum NetworkConfig {
     }
 
     static var baseURL: URL {
-        guard let url = URL(string: baseURLString) else {
-            return URL(string: "http://192.168.1.1:8000")!
-        }
-        return url
+        if let url = URL(string: baseURLString) { return url }
+        return URL(string: "http://192.168.1.1:8000") ?? URL(string: "http://127.0.0.1:8000")!
     }
 
     static var apiBaseURL: String {

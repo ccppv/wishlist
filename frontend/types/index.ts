@@ -7,8 +7,9 @@ export interface User {
   email_verified: boolean;
   google_id?: string;
   onboarding_completed: boolean;
-  telegram_id?: string;
+  telegram_user_id?: number;
   telegram_username?: string;
+  telegram_notifications_enabled?: boolean;
   is_active: boolean;
   is_superuser: boolean;
   created_at: string;

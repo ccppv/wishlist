@@ -93,10 +93,18 @@ struct EditProfileView: View {
                 } else { nil }
                 let filename = jpegData != nil ? "avatar_\(UUID().uuidString.prefix(8)).jpg" : nil
 
+                #if DEBUG
                 print("[EditProfile] save: fullName=\(nameToSend.isEmpty ? "(empty)" : "'\(nameToSend)'") avatarData=\(avatarData != nil ? "\(avatarData!.count) bytes" : "nil") jpegData=\(jpegData != nil ? "\(jpegData!.count) bytes" : "nil") filename=\(filename ?? "nil")")
+                #endif
+                #if DEBUG
                 if jpegData != nil { print("[EditProfile] -> PATCH /users/me (multipart)") }
+                #endif
+                #if DEBUG
                 else if !nameToSend.isEmpty { print("[EditProfile] -> PATCH /users/me/json") }
+                #endif
+                #if DEBUG
                 else { print("[EditProfile] -> no changes, skip") }
+                #endif
 
                 let updatedUser = try await usersAPI.updateMe(
                     fullName: nameToSend.isEmpty ? nil : nameToSend,
@@ -104,7 +112,9 @@ struct EditProfileView: View {
                     avatarFilename: filename
                 )
 
+                #if DEBUG
                 print("[EditProfile] OK: full_name=\(updatedUser.fullName ?? "nil") avatar_url=\(updatedUser.avatarUrl ?? "nil")")
+                #endif
 
                 await MainActor.run {
                     authStore.setUser(updatedUser)
@@ -112,7 +122,9 @@ struct EditProfileView: View {
                     dismiss()
                 }
             } catch {
+                #if DEBUG
                 print("[EditProfile] ERROR: \(error)")
+                #endif
                 await MainActor.run {
                     errorMessage = (error as? APIError).flatMap { if case .server(_, let m) = $0 { return m }; return nil } ?? error.localizedDescription
                 }

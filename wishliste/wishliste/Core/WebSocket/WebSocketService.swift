@@ -36,6 +36,7 @@ final class WebSocketService {
     private var reconnectDelay: TimeInterval = 3
     private var maxReconnectAttempts = 10
     private var reconnectAttempts = 0
+    private let reconnectLock = NSLock()
     private var isIntentionallyClosed = false
     private var wsBaseURL: String {
         let base = NetworkConfig.baseURLString
@@ -53,10 +54,9 @@ final class WebSocketService {
             .replacingOccurrences(of: "https://", with: "", options: [])
             .replacingOccurrences(of: "http://", with: "", options: [])
         let path = "/api/v1/ws/\(userId)"
-        let encoded = token.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token
-        let urlString = "\(scheme)://\(host)\(path)?token=\(encoded)"
-        guard let url = URL(string: urlString) else { return }
-        let request = URLRequest(url: url)
+        guard let url = URL(string: "\(scheme)://\(host)\(path)") else { return }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         task = URLSession.shared.webSocketTask(with: request)
         task?.resume()
         startPing()
@@ -73,11 +73,12 @@ final class WebSocketService {
 
     private func startPing() {
         pingTimer?.invalidate()
-        pingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             self?.sendPing()
         }
-        pingTimer?.tolerance = 5
-        RunLoop.main.add(pingTimer!, forMode: .common)
+        timer.tolerance = 5
+        pingTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     private func sendPing() {
@@ -119,11 +120,21 @@ final class WebSocketService {
     }
 
     private func tryReconnect() {
+        let user: User
+        let token: String
+        reconnectLock.lock()
         guard reconnectAttempts < maxReconnectAttempts,
-              let user = AuthStore.shared.user,
-              let token = AuthStore.shared.token else { return }
+              let u = AuthStore.shared.user,
+              let t = AuthStore.shared.token else {
+            reconnectLock.unlock()
+            return
+        }
         reconnectAttempts += 1
-        let delay = min(reconnectDelay * pow(2, Double(reconnectAttempts - 1)), 30)
+        let attempt = reconnectAttempts
+        reconnectLock.unlock()
+        user = u
+        token = t
+        let delay = min(reconnectDelay * pow(2, Double(attempt - 1)), 30)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.connect(userId: user.id, token: token)
         }

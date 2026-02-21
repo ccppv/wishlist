@@ -45,7 +45,7 @@ struct RootView: View {
                         try await Task.sleep(nanoseconds: 15_000_000_000)
                         throw NSError(domain: "timeout", code: -1, userInfo: [NSLocalizedDescriptionKey: "Таймаут подключения"])
                     }
-                    let first = try await group.next()!
+                    guard let first = try await group.next() else { throw APIError.noData }
                     group.cancelAll()
                     return first
                 }

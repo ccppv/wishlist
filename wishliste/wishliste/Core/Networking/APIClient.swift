@@ -84,13 +84,19 @@ final class APIClient {
         let hasAuth = request.value(forHTTPHeaderField: "Authorization") != nil
         let bodyLen = request.httpBody?.count ?? 0
         if bodyLen > 0 {
+            #if DEBUG
             print("[API] \(method) \(urlString) | Auth: \(hasAuth) | body: \(bodyLen) bytes")
+            #endif
         } else {
+            #if DEBUG
             print("[API] \(method) \(urlString) | Auth: \(hasAuth)")
+            #endif
         }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError.noData }
+        #if DEBUG
         print("[API] \(method) \(urlString) | Status: \(http.statusCode)")
+        #endif
 
         if http.statusCode == 401 {
             throw APIError.unauthorized
@@ -128,25 +134,48 @@ final class APIClient {
         do {
             let result = try decoder.decode(T.self, from: data)
             if T.self == User.self, let user = result as? User {
+                #if DEBUG
                 print("[API] User decoded: full_name=\(user.fullName ?? "nil") avatar_url=\(user.avatarUrl ?? "nil")")
+                #endif
                 if user.fullName == nil || user.avatarUrl == nil, let raw = String(data: data, encoding: .utf8) {
+                    #if DEBUG
                     print("[API] User raw response (full_name/avatar_url nil): \(String(raw.prefix(500)))")
+                    #endif
                 }
             }
             return result
         } catch let decodingError as DecodingError {
             if T.self == User.self, let raw = String(data: data, encoding: .utf8) {
+                #if DEBUG
                 print("[API] User decode failed. Raw: \(String(raw.prefix(800)))")
+                #endif
             }
             if let raw = String(data: data, encoding: .utf8) {
+                #if DEBUG
                 print("[API] Decode failed. Raw: \(String(raw.prefix(500)))")
+                #endif
             }
             switch decodingError {
-            case .keyNotFound(let key, let c): print("[API] Key missing: \(key.stringValue) path: \(c.codingPath)")
-            case .typeMismatch(let type, let c): print("[API] Type mismatch: \(type) path: \(c.codingPath)")
-            case .valueNotFound(let type, let c): print("[API] Value not found: \(type) path: \(c.codingPath)")
-            case .dataCorrupted(let c): print("[API] Data corrupted: \(c.debugDescription)")
-            @unknown default: print("[API] Decode error: \(decodingError)")
+            case .keyNotFound(let key, let c):
+                #if DEBUG
+                print("[API] Key missing: \(key.stringValue) path: \(c.codingPath)")
+                #endif
+            case .typeMismatch(let type, let c):
+                #if DEBUG
+                print("[API] Type mismatch: \(type) path: \(c.codingPath)")
+                #endif
+            case .valueNotFound(let type, let c):
+                #if DEBUG
+                print("[API] Value not found: \(type) path: \(c.codingPath)")
+                #endif
+            case .dataCorrupted(let c):
+                #if DEBUG
+                print("[API] Data corrupted: \(c.debugDescription)")
+                #endif
+            @unknown default:
+                #if DEBUG
+                print("[API] Decode error: \(decodingError)")
+                #endif
             }
             if T.self == TokenWithUser.self {
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -229,16 +258,16 @@ final class APIClient {
         var body = Data()
         for (key, value) in multipartForm {
             if let str = value as? String {
-                body.append("--\(boundary)\r\n".data(using: .utf8)!)
-                body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8)!)
-                body.append("\(str)\r\n".data(using: .utf8)!)
+                body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+                body.append("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n".data(using: .utf8) ?? Data())
+                body.append("\(str)\r\n".data(using: .utf8) ?? Data())
             }
         }
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"\(fileKey)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+        body.append("Content-Disposition: form-data; name=\"\(fileKey)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8) ?? Data())
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8) ?? Data())
         body.append(fileData)
-        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8) ?? Data())
         request.httpBody = body
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw APIError.noData }
@@ -253,26 +282,26 @@ final class APIClient {
     private func multipartBody(boundary: String, fields: [String: String], fileKey: String, fileName: String, fileData: Data, mimeType: String) -> Data {
         var body = Data()
         for (k, v) in fields {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"\(k)\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(v)\r\n".data(using: .utf8)!)
+            body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+            body.append("Content-Disposition: form-data; name=\"\(k)\"\r\n\r\n".data(using: .utf8) ?? Data())
+            body.append("\(v)\r\n".data(using: .utf8) ?? Data())
         }
-        body.append("--\(boundary)\r\n".data(using: .utf8)!)
-        body.append("Content-Disposition: form-data; name=\"\(fileKey)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+        body.append("Content-Disposition: form-data; name=\"\(fileKey)\"; filename=\"\(fileName)\"\r\n".data(using: .utf8) ?? Data())
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8) ?? Data())
         body.append(fileData)
-        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8) ?? Data())
         return body
     }
 
     private func multipartBodyFieldsOnly(boundary: String, fields: [String: String]) -> Data {
         var body = Data()
         for (k, v) in fields {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"\(k)\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(v)\r\n".data(using: .utf8)!)
+            body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+            body.append("Content-Disposition: form-data; name=\"\(k)\"\r\n\r\n".data(using: .utf8) ?? Data())
+            body.append("\(v)\r\n".data(using: .utf8) ?? Data())
         }
-        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)--\r\n".data(using: .utf8) ?? Data())
         return body
     }
 }
