@@ -75,7 +75,7 @@ struct RegisterView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Пароль (мин. 6 символов)")
+                            Text("Пароль (8+ символов, буквы, цифра, спецсимвол)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             ZStack(alignment: .trailing) {
@@ -124,7 +124,7 @@ struct RegisterView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .buttonBorderShape(.capsule)
-                        .disabled(isLoading || email.isEmpty || username.count < 3 || password.count < 6)
+                        .disabled(isLoading || email.isEmpty || username.count < 3 || password.count < 8)
 
                         Spacer().frame(height: 24)
 
@@ -168,6 +168,11 @@ struct RegisterView: View {
 
     private func register() {
         errorMessage = nil
+        let pwdResult = PasswordValidator.validate(password)
+        if !pwdResult.isValid {
+            errorMessage = pwdResult.errors.joined(separator: ". ")
+            return
+        }
         isLoading = true
         Task { @MainActor in
             do {

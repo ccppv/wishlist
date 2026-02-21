@@ -10,8 +10,8 @@ final class GuestSessionStore: ObservableObject {
     private init() {
         if let kc = KeychainService.load(for: .guestToken), !kc.isEmpty {
             let createdAt = KeychainService.load(for: .guestTokenCreatedAt).flatMap { Double($0) }.map { Date(timeIntervalSince1970: $0) }
-            let expiresAt = createdAt.map { Calendar.current.date(byAdding: .day, value: 90, to: $0) }
-            if expiresAt == nil || (expiresAt != nil && Date() < expiresAt!) {
+            let expiresAt = createdAt.flatMap { Calendar.current.date(byAdding: .day, value: 90, to: $0) }
+            if expiresAt.map({ Date() < $0 }) ?? true {
                 token = kc
                 displayName = KeychainService.load(for: .guestDisplayName)
             } else {

@@ -152,11 +152,16 @@ struct EditItemView: View {
     private func parseUrl() {
         let u = url.trimmingCharacters(in: .whitespaces)
         guard !u.isEmpty else { return }
+        let urlResult = URLValidation.validateURL(u)
+        guard urlResult.isValid, let validUrl = urlResult.normalized else {
+            errorMessage = urlResult.error ?? "Некорректная ссылка"
+            return
+        }
         errorMessage = nil
         isParsing = true
         Task {
             do {
-                let data = try await api.parseUrl(u)
+                let data = try await api.parseUrl(validUrl)
                 await MainActor.run {
                     if let t = data.title, !t.isEmpty { title = t }
                     if let d = data.description { description = d }
@@ -196,12 +201,23 @@ struct EditItemView: View {
 
     private func save() {
         errorMessage = nil
+        let urlToUse: String?
+        if !url.trimmingCharacters(in: .whitespaces).isEmpty {
+            let urlResult = URLValidation.validateURL(url)
+            guard urlResult.isValid, let valid = urlResult.normalized else {
+                errorMessage = urlResult.error ?? "Некорректная ссылка"
+                return
+            }
+            urlToUse = valid
+        } else {
+            urlToUse = nil
+        }
         isLoading = true
         let price: Decimal? = Decimal(string: priceStr.trimmingCharacters(in: .whitespaces))
         var update = ItemUpdate()
         update.title = title.trimmingCharacters(in: .whitespaces)
         update.description = description.isEmpty ? nil : description
-        update.url = url.isEmpty ? nil : url
+        update.url = urlToUse
         update.images = imageUrls.isEmpty ? nil : imageUrls
         update.price = price
         update.currency = "₽"

@@ -7,10 +7,9 @@ enum NetworkConfig {
         }
         if let fromBundle = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String, !fromBundle.isEmpty {
             let s = fromBundle.hasSuffix("/") ? String(fromBundle.dropLast()) : fromBundle
-            return s.replacingOccurrences(of: "localhost", with: "192.168.1.1")
-                    .replacingOccurrences(of: "127.0.0.1", with: "192.168.1.1")
+            return s
         }
-        return "http://192.168.1.1:8000"
+        return "http://127.0.0.1:8000"
     }
 
     static var baseURL: URL {

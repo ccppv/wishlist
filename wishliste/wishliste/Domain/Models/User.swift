@@ -15,14 +15,8 @@ struct User: Codable, Equatable {
     var updatedAt: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, email, username, isActive, isSuperuser
-        case fullName = "full_name"
-        case avatarUrl = "avatar_url"
-        case emailVerified = "email_verified"
-        case googleId = "google_id"
-        case onboardingCompleted = "onboarding_completed"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+        case id, email, username, fullName, avatarUrl, emailVerified, googleId
+        case onboardingCompleted, isActive, isSuperuser, createdAt, updatedAt
     }
 
     init(from decoder: Decoder) throws {
@@ -65,8 +59,6 @@ struct UserPublic: Codable {
     let avatarUrl: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, username
-        case fullName = "full_name"
-        case avatarUrl = "avatar_url"
+        case id, username, fullName, avatarUrl
     }
 }

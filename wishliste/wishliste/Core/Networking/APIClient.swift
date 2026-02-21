@@ -106,7 +106,7 @@ final class APIClient {
         if http.statusCode == 401 {
             let canRetry = path.contains("/auth/refresh") == false && path.contains("/auth/login") == false && path.contains("/auth/verify-email") == false && path.contains("/auth/register") == false
             if canRetry, let handler = refreshHandler, await handler() {
-                return try await request(endpoint, method: method, body: body, query: query, formFields: formFields, formFile: formFile, useMultipart: useMultipart, extraHeaders: extraHeaders)
+                return try await self.request(endpoint, method: method, body: body, query: query, formFields: formFields, formFile: formFile, useMultipart: useMultipart, extraHeaders: extraHeaders)
             }
             throw APIError.unauthorized
         }
@@ -135,7 +135,7 @@ final class APIClient {
             throw APIError.server(200, "Сервер вернул ответ регистрации вместо токена. Отправьте код повторно и введите его.")
         }
         let decoder: JSONDecoder
-        if T.self == [WishlistSummary].self || T.self == WishlistSummary.self || T.self == Wishlist.self || T.self == Item.self || T.self == [Item].self || T.self == User.self || T.self == [User].self || T.self == [Friendship].self || T.self == Friendship.self || T.self == [ReservedItemDetail].self {
+        if T.self == [WishlistSummary].self || T.self == WishlistSummary.self || T.self == Wishlist.self || T.self == Item.self || T.self == [Item].self || T.self == [Friendship].self || T.self == Friendship.self || T.self == [ReservedItemDetail].self {
             let d = JSONDecoder()
             decoder = d
         } else {
@@ -207,7 +207,7 @@ final class APIClient {
             return (r, http)
         }
         let decoder: JSONDecoder
-        if T.self == [WishlistSummary].self || T.self == WishlistSummary.self || T.self == Wishlist.self || T.self == Item.self || T.self == [Item].self || T.self == User.self || T.self == [User].self || T.self == [Friendship].self || T.self == Friendship.self || T.self == [ReservedItemDetail].self {
+        if T.self == [WishlistSummary].self || T.self == WishlistSummary.self || T.self == Wishlist.self || T.self == Item.self || T.self == [Item].self || T.self == [Friendship].self || T.self == Friendship.self || T.self == [ReservedItemDetail].self {
             decoder = JSONDecoder()
         } else {
             decoder = JSONDecoder.api

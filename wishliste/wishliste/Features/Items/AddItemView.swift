@@ -151,11 +151,16 @@ struct AddItemView: View {
     private func parseUrl() {
         let u = url.trimmingCharacters(in: .whitespaces)
         guard !u.isEmpty else { return }
+        let urlResult = URLValidation.validateURL(u)
+        guard urlResult.isValid, let validUrl = urlResult.normalized else {
+            errorMessage = urlResult.error ?? "Некорректная ссылка"
+            return
+        }
         errorMessage = nil
         isParsing = true
         Task {
             do {
-                let data = try await api.parseUrl(u)
+                let data = try await api.parseUrl(validUrl)
                 await MainActor.run {
                     if let t = data.title, !t.isEmpty { title = t }
                     if let d = data.description { description = d }
@@ -201,13 +206,24 @@ struct AddItemView: View {
 
     private func add() {
         errorMessage = nil
+        let urlToUse: String?
+        if !url.trimmingCharacters(in: .whitespaces).isEmpty {
+            let urlResult = URLValidation.validateURL(url)
+            guard urlResult.isValid, let valid = urlResult.normalized else {
+                errorMessage = urlResult.error ?? "Некорректная ссылка"
+                return
+            }
+            urlToUse = valid
+        } else {
+            urlToUse = nil
+        }
         isLoading = true
         let price: Decimal? = Decimal(string: priceStr.trimmingCharacters(in: .whitespaces))
         let item = ItemCreate(
             wishlistId: wishlistId,
             title: title.trimmingCharacters(in: .whitespaces),
             description: description.isEmpty ? nil : description,
-            url: url.isEmpty ? nil : url,
+            url: urlToUse,
             images: imageUrls.isEmpty ? nil : imageUrls,
             price: price,
             currency: "₽",
